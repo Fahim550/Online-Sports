@@ -779,6 +779,7 @@ export type Database = {
         Row: {
           color: string | null;
           created_at: string | null;
+          fabric: string | null;
           id: string;
           is_active: boolean | null;
           price_adjustment: number | null;
@@ -793,6 +794,7 @@ export type Database = {
         Insert: {
           color?: string | null;
           created_at?: string | null;
+          fabric?: string | null;
           id?: string;
           is_active?: boolean | null;
           price_adjustment?: number | null;
@@ -807,6 +809,7 @@ export type Database = {
         Update: {
           color?: string | null;
           created_at?: string | null;
+          fabric?: string | null;
           id?: string;
           is_active?: boolean | null;
           price_adjustment?: number | null;
@@ -833,6 +836,7 @@ export type Database = {
           category_id: string | null;
           created_at: string;
           description: string | null;
+          fabrics: string | null;
           hide_stock: boolean;
           id: string;
           images: string[];
@@ -856,6 +860,7 @@ export type Database = {
           category_id?: string | null;
           created_at?: string;
           description?: string | null;
+          fabrics?: string | null;
           hide_stock?: boolean;
           id?: string;
           images?: string[];
@@ -879,6 +884,7 @@ export type Database = {
           category_id?: string | null;
           created_at?: string;
           description?: string | null;
+          fabrics?: string | null;
           hide_stock?: boolean;
           id?: string;
           images?: string[];

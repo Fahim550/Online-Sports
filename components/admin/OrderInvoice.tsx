@@ -164,7 +164,18 @@ export const OrderInvoice = forwardRef<HTMLDivElement, OrderInvoiceProps>(
                     {index + 1}
                   </td>
                   <td className="border border-gray-300 px-4 py-2 text-sm">
-                    {item.product_name}
+                    <div className="font-medium">{item.product_name}</div>
+                    {item.variant_info && typeof item.variant_info === "object" && (
+                      <div className="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
+                        {Object.entries(item.variant_info as Record<string, any>)
+                          .filter(([_, v]) => v != null && v !== "")
+                          .map(([key, value]) => (
+                            <span key={key} className="inline-block bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">
+                              <span className="capitalize font-semibold">{key}:</span> {String(value)}
+                            </span>
+                          ))}
+                      </div>
+                    )}
                   </td>
                   <td className="border border-gray-300 px-4 py-2 text-sm text-right">
                     {formatCurrency(item.price)}

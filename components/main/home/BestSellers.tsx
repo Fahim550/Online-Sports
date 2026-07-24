@@ -17,7 +17,7 @@ export function BestSellers() {
         <div className="container-shop">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h2 className="text-xl md:text-2xl">
+              <h2 className="text-xl md:text-1xl">
                 {t("home.bestSellers")}
               </h2>
             </div>
@@ -56,8 +56,8 @@ export function BestSellers() {
           </Link>
         </div>
 
-        <div className="product-grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-3">
-          {products.slice(0, 10).map((product, index) => (
+        <div className="product-grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-3">
+          {products.slice(0, 8).map((product, index) => (
             <div
               key={product.id}
               className={`reveal-base stagger-${index + 1} ${isVisible ? "reveal-visible" : ""}`}
@@ -67,10 +67,10 @@ export function BestSellers() {
           ))}
         </div>
 
-        <div className="flex sm:hidden justify-center mt-6">
+        <div className="flex justify-center mt-8">
           <Link
             href="/shop?filter=bestsellers"
-            className="w-full text-center py-2.5 px-5 border border-accent text-accent font-semibold rounded-xl text-sm transition-all duration-300 hover:bg-accent hover:text-white"
+            className="w-full sm:w-auto min-w-[180px] text-center py-2.5 px-10 border border-accent text-accent font-semibold rounded-xl text-sm transition-all duration-300 hover:bg-accent hover:text-white"
           >
             {t("common.viewAll") || "View All"}
           </Link>

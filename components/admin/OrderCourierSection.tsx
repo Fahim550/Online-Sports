@@ -92,6 +92,24 @@ export function OrderCourierSection({
   const handleCreateParcel = async () => {
     const fullAddress = `${order.shipping_address}, ${order.shipping_city}`;
 
+    // Generate items summary to append to courier note so it is printed on the physical shipping slip
+    const itemsSummary =
+      (order as any).order_items
+        ?.map((item: any) => {
+          const variants = item.variant_info && typeof item.variant_info === "object"
+            ? ` (${Object.entries(item.variant_info)
+                .filter(([_, v]) => v != null && v !== "")
+                .map(([k, v]) => `${k}: ${v}`)
+                .join(", ")})`
+            : "";
+          return `${item.product_name}${variants} x${item.quantity}`;
+        })
+        .join(", ") || "";
+
+    const courierNote = [order.notes, itemsSummary ? `Items: ${itemsSummary}` : ""]
+      .filter(Boolean)
+      .join(" | ");
+
     await createParcel.mutateAsync({
       order_id: order.id,
       recipient_name: order.customer_name,
@@ -100,7 +118,7 @@ export function OrderCourierSection({
       recipient_city: order.shipping_city,
       cod_amount: isCOD ? order.total : 0,
       invoice: order.order_number,
-      note: order.notes || undefined,
+      note: courierNote || undefined,
     });
 
     setShowConfirmDialog(false);

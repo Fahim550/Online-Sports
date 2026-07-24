@@ -49,6 +49,7 @@ export function ProductVariantManager({
   const [formData, setFormData] = useState({
     size: "",
     color: "",
+    fabric: "",
     sku: "",
     variant_price: "",
     variant_sale_price: "",
@@ -60,6 +61,7 @@ export function ProductVariantManager({
     setFormData({
       size: variant.size || "",
       color: variant.color || "",
+      fabric: variant.fabric || "",
       sku: variant.sku,
       variant_price: variant.variant_price?.toString() || "",
       variant_sale_price: (variant as any).variant_sale_price?.toString() || "",
@@ -79,6 +81,7 @@ export function ProductVariantManager({
     const variantData = {
       size: formData.size || null,
       color: formData.color || null,
+      fabric: formData.fabric || null,
       sku: formData.sku || `VAR-${Date.now()}`,
       variant_price: parseFloat(formData.variant_price) || 0,
       variant_sale_price: formData.variant_sale_price
@@ -113,6 +116,7 @@ export function ProductVariantManager({
     setFormData({
       size: "",
       color: "",
+      fabric: "",
       sku: "",
       variant_price: "",
       variant_sale_price: "",
@@ -144,7 +148,7 @@ export function ProductVariantManager({
               Add Variant
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingVariant ? "Edit Variant" : "Add New Variant"} -{" "}
@@ -163,6 +167,21 @@ export function ProductVariantManager({
                     setFormData({ ...formData, size: e.target.value })
                   }
                   placeholder="e.g., M, L, XL"
+                  className="input-shop"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Fabric (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.fabric}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fabric: e.target.value })
+                  }
+                  placeholder="e.g., Dri-Fit, Honeycomb"
                   className="input-shop"
                 />
               </div>
@@ -331,6 +350,7 @@ export function ProductVariantManager({
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Size</th>
                   <th className="px-4 py-3 text-left font-medium">Color</th>
+                  <th className="px-4 py-3 text-left font-medium">Fabric</th>
                   <th className="px-4 py-3 text-left font-medium">SKU</th>
                   <th className="px-4 py-3 text-left font-medium">
                     Regular Price
@@ -347,6 +367,7 @@ export function ProductVariantManager({
                   <tr key={variant.id} className="hover:bg-muted/50">
                     <td className="px-4 py-3">{variant.size || "-"}</td>
                     <td className="px-4 py-3">{variant.color || "-"}</td>
+                    <td className="px-4 py-3">{variant.fabric || "-"}</td>
                     <td className="px-4 py-3 font-mono text-xs">
                       {variant.sku}
                     </td>

@@ -43,6 +43,9 @@ const RADIUS_PRESETS = [
 ];
 
 const ACCENT_PRESETS = [
+  { color: "#6b2d5c", name: "Suyeb Logo Blend" },
+  { color: "#088c90", name: "Suyeb Teal (Logo Match)" },
+  { color: "#d10000", name: "Suyeb Red (Logo Match)" },
   { color: "#e85a4f", name: "Coral" },
   { color: "#3b82f6", name: "Blue" },
   { color: "#10b981", name: "Emerald" },
@@ -52,6 +55,13 @@ const ACCENT_PRESETS = [
   { color: "#06b6d4", name: "Cyan" },
   { color: "#ef4444", name: "Red" },
   { color: "#16a34a", name: "Green" },
+  { color: "#4f46e5", name: "Indigo" },
+  { color: "#f43f5e", name: "Rose" },
+  { color: "#0ea5e9", name: "Sky Blue" },
+  { color: "#ea580c", name: "Orange" },
+  { color: "#d946ef", name: "Fuchsia" },
+  { color: "#84cc16", name: "Lime" },
+  { color: "#64748b", name: "Slate" },
 ];
 
 export function ThemeSettingsTab({

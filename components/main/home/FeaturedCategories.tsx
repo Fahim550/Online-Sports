@@ -75,7 +75,7 @@ export function FeaturedCategories() {
           className={`flex items-center justify-between mb-8 reveal-left ${isVisible ? "reveal-visible" : ""}`}
         >
           <div>
-            <h2 className="text-xl md:text-2xl tracking-tight">
+            <h2 className="text-xl md:text-1xl tracking-tight">
               {t("home.shopByCategory") || "Categories"}
             </h2>
           </div>

@@ -3,6 +3,8 @@ import React, { createContext, useContext, useEffect, useReducer, useState } fro
 
 export interface CartItem {
   id: string;
+  productId?: string;
+  slug?: string;
   name: string;
   price: number;
   salePrice?: number;
@@ -10,7 +12,7 @@ export interface CartItem {
   quantity: number;
   stock: number;
   variantId?: string;
-  variantInfo?: { size?: string | null; color?: string | null };
+  variantInfo?: { size?: string | null; color?: string | null; fabric?: string | null };
 }
 
 interface CartState {

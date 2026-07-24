@@ -24,7 +24,15 @@ export const CourierLabel = forwardRef<HTMLDivElement, CourierLabelProps>(
     // Generate items summary
     const itemsSummary =
       (order as any).order_items
-        ?.map((item: any) => `${item.product_name} x${item.quantity}`)
+        ?.map((item: any) => {
+          const variants = item.variant_info && typeof item.variant_info === "object"
+            ? ` (${Object.entries(item.variant_info)
+                .filter(([_, v]) => v != null && v !== "")
+                .map(([k, v]) => `${k}: ${v}`)
+                .join(", ")})`
+            : "";
+          return `${item.product_name}${variants} x${item.quantity}`;
+        })
         .join(", ") || "N/A";
 
     return (

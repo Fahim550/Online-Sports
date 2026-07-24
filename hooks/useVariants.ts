@@ -7,6 +7,7 @@ export interface ProductVariant {
   product_id: string;
   size: string | null;
   color: string | null;
+  fabric: string | null;
   sku: string;
   price_adjustment: number;
   variant_price: number | null;

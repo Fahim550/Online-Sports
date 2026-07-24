@@ -42,3 +42,8 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS hide_stock BOOLEAN NOT NULL
 ALTER TABLE public.product_variants ADD COLUMN variant_sale_price numeric NULL;
 
 ALTER TABLE public.products ADD COLUMN specifications jsonb NULL DEFAULT NULL;
+
+-- Add variant columns to order_items
+ALTER TABLE public.order_items 
+ADD COLUMN IF NOT EXISTS variant_id UUID REFERENCES public.product_variants(id) ON DELETE SET NULL,
+ADD COLUMN IF NOT EXISTS variant_info JSONB;

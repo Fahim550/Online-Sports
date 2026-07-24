@@ -9,7 +9,11 @@ interface VariantSelectorProps {
   variants: ProductVariant[];
   selectedVariant: ProductVariant | null;
   onSelect: (variant: ProductVariant) => void;
-  onColorSelect?: (color: string | null) => void;
+  selectedSize: string | null;
+  onSizeSelect: (size: string | null) => void;
+  selectedColor: string | null;
+  onColorSelect: (color: string | null) => void;
+  selectedFabric?: string | null;
 }
 
 // Map common color names to CSS color hex/values
@@ -36,10 +40,12 @@ export function VariantSelector({
   variants,
   selectedVariant,
   onSelect,
+  selectedSize,
+  onSizeSelect,
+  selectedColor,
   onColorSelect,
+  selectedFabric,
 }: VariantSelectorProps) {
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [showSizeGuide, setShowSizeGuide] = useState(false);
 
   // Extract unique sizes
@@ -57,27 +63,14 @@ export function VariantSelector({
     ),
   ];
 
-  // Sync local state from selectedVariant on mount/change
-  useEffect(() => {
-    if (selectedVariant) {
-      setSelectedSize(selectedVariant.size || null);
-      if (selectedVariant.color) {
-        const colors = selectedVariant.color
-          .split(",")
-          .map((c) => c.trim())
-          .filter(Boolean);
-        if (colors.length > 0 && !selectedColor) {
-          setSelectedColor(colors[0]);
-        }
-      }
-    }
-  }, [selectedVariant]);
-
-  // Find best matching variant for given size + color
+  // Find best matching variant for given size + color + fabric
   const findVariant = (
     size: string | null,
     color: string | null,
+    fabric?: string | null,
   ): ProductVariant | null => {
+    const normFabric = fabric ? fabric.toLowerCase().trim() : null;
+
     if (size && color) {
       const match = variants.find(
         (v) =>
@@ -86,6 +79,7 @@ export function VariantSelector({
             ?.split(",")
             .map((c) => c.trim())
             .includes(color) &&
+          (!v.fabric || !normFabric || v.fabric.toLowerCase().trim() === normFabric) &&
           v.is_active &&
           v.stock > 0,
       );
@@ -94,6 +88,8 @@ export function VariantSelector({
 
     if (size) {
       const match =
+        variants.find((v) => v.size === size && (!v.fabric || !normFabric || v.fabric.toLowerCase().trim() === normFabric) && v.is_active && v.stock > 0) ||
+        variants.find((v) => v.size === size && (!v.fabric || !normFabric || v.fabric.toLowerCase().trim() === normFabric)) ||
         variants.find((v) => v.size === size && v.is_active && v.stock > 0) ||
         variants.find((v) => v.size === size);
       if (match) return match;
@@ -101,6 +97,23 @@ export function VariantSelector({
 
     if (color) {
       const match =
+        variants.find(
+          (v) =>
+            v.color
+              ?.split(",")
+              .map((c) => c.trim())
+              .includes(color) &&
+            (!v.fabric || !normFabric || v.fabric.toLowerCase().trim() === normFabric) &&
+            v.is_active &&
+            v.stock > 0,
+        ) ||
+        variants.find((v) =>
+          v.color
+            ?.split(",")
+            .map((c) => c.trim())
+            .includes(color) &&
+          (!v.fabric || !normFabric || v.fabric.toLowerCase().trim() === normFabric)
+        ) ||
         variants.find(
           (v) =>
             v.color
@@ -123,29 +136,18 @@ export function VariantSelector({
   };
 
   const handleSizeSelect = (size: string) => {
-    setSelectedSize(size);
-    const variant = findVariant(size, selectedColor);
+    onSizeSelect(size);
+    const variant = findVariant(size, selectedColor, selectedFabric);
     if (variant) {
       onSelect(variant);
-      if (selectedColor) {
-        const variantColors =
-          variant.color?.split(",").map((c) => c.trim()) || [];
-        if (!variantColors.includes(selectedColor)) {
-          setSelectedColor(variantColors.length > 0 ? variantColors[0] : null);
-        }
-      }
     }
   };
 
   const handleColorSelect = (color: string) => {
-    setSelectedColor(color);
-    onColorSelect?.(color);
-    const variant = findVariant(selectedSize, color);
+    onColorSelect(color);
+    const variant = findVariant(selectedSize, color, selectedFabric);
     if (variant) {
       onSelect(variant);
-      if (variant.size) {
-        setSelectedSize(variant.size);
-      }
     }
   };
 

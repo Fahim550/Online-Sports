@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import {
   useProductReviews,
   useProductRatingStats,
@@ -41,6 +42,22 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+const DEFAULT_FABRIC_DESCS: Record<string, string> = {
+  "dri-fit (ড্রাই-ফিট)": "Lightweight, stretchable & sweat-wicking. Best for playing.",
+  "dri-fit": "Lightweight, stretchable & sweat-wicking. Best for playing.",
+  "pin mesh (পিন মেশ)": "Tiny micro-holes for premium cooling & ventilation.",
+  "pin mesh": "Tiny micro-holes for premium cooling & ventilation.",
+  "dot knit (ডট নিট)": "Textured structure, durable, soft & comfortable for activewear.",
+  "dot knit": "Textured structure, durable, soft & comfortable for activewear.",
+  "honeycomb (হানিকম্ব)": "Unique waffle-knit style, thick, premium & highly durable.",
+  "honeycomb": "Unique waffle-knit style, thick, premium & highly durable.",
+};
+
+const getFabricDescription = (name: string) => {
+  const normalized = name.toLowerCase().trim();
+  return DEFAULT_FABRIC_DESCS[normalized] || "Premium quality fabric for comfort & style.";
+};
+
 export default function ProductDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
@@ -57,11 +74,91 @@ export default function ProductDetailsPage() {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     null,
   );
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedFabric, setSelectedFabric] = useState<string>("Dri-Fit (ড্রাই-ফিট)");
   const [showReviewForm, setShowReviewForm] = useState(true); // Default open in reviews tab
   const [activeTab, setActiveTab] = useState<"description" | "additional" | "reviews">("description");
   const isMobile = useIsMobile();
   const { data: storeSettings } = useStoreSettings();
+
+  // Dynamically resolve fabric options from the active product variants
+  const fabricOptions = useMemo(() => {
+    if (variants.length === 0) return [];
+
+    // Get unique fabrics defined in the product's variants list
+    const fabrics = [
+      ...new Set(
+        variants
+          .filter((v) => v.fabric && v.is_active)
+          .map((v) => v.fabric!.trim())
+          .filter(Boolean)
+      )
+    ];
+
+    return fabrics.map((name: string, idx: number) => ({
+      id: `fabric-${idx}`,
+      name: name,
+      desc: getFabricDescription(name),
+    }));
+  }, [variants]);
+
+  // Synchronize selectedFabric when custom fabrics list loads
+  useEffect(() => {
+    if (fabricOptions.length > 0) {
+      const fabricNames = fabricOptions.map((f) => f.name);
+      if (!selectedFabric || !fabricNames.includes(selectedFabric)) {
+        setSelectedFabric(fabricOptions[0].name);
+      }
+    } else {
+      setSelectedFabric("");
+    }
+  }, [fabricOptions, selectedFabric]);
+
+  // Find matching variant when fabric/size/color changes to update active price and stock
+  useEffect(() => {
+    if (variants.length > 0) {
+      const normFabric = selectedFabric ? selectedFabric.toLowerCase().trim() : "";
+      const normColor = selectedColor ? selectedColor.toLowerCase().trim() : "";
+
+      const match =
+        // 1. Match Fabric + Size + Color
+        variants.find((v) => {
+          const fabricMatch = v.fabric && v.fabric.toLowerCase().trim() === normFabric;
+          const sizeMatch = selectedSize ? v.size === selectedSize : !v.size;
+          const colors = v.color ? v.color.split(",").map((c) => c.trim().toLowerCase()) : [];
+          const colorMatch = normColor ? colors.includes(normColor) : !v.color;
+          return fabricMatch && sizeMatch && colorMatch && v.is_active;
+        }) ||
+        // 2. Match Fabric + Size
+        variants.find((v) => {
+          const fabricMatch = v.fabric && v.fabric.toLowerCase().trim() === normFabric;
+          const sizeMatch = selectedSize ? v.size === selectedSize : !v.size;
+          return fabricMatch && sizeMatch && v.is_active;
+        }) ||
+        // 3. Match Fabric only
+        variants.find((v) => {
+          const fabricMatch = v.fabric && v.fabric.toLowerCase().trim() === normFabric;
+          return fabricMatch && v.is_active;
+        }) ||
+        // 4. Match Size + Color only
+        variants.find((v) => {
+          const sizeMatch = selectedSize ? v.size === selectedSize : !v.size;
+          const colors = v.color ? v.color.split(",").map((c) => c.trim().toLowerCase()) : [];
+          const colorMatch = normColor ? colors.includes(normColor) : !v.color;
+          return sizeMatch && colorMatch && v.is_active;
+        }) ||
+        // 5. Match Size only
+        variants.find((v) => {
+          const sizeMatch = selectedSize ? v.size === selectedSize : !v.size;
+          return sizeMatch && v.is_active;
+        });
+
+      if (match && match.id !== selectedVariant?.id) {
+        setSelectedVariant(match);
+      }
+    }
+  }, [selectedFabric, selectedSize, selectedColor, variants, selectedVariant?.id]);
 
   const whatsappEnabled =
     storeSettings?.whatsapp_order_enabled === "true" &&
@@ -81,26 +178,44 @@ export default function ProductDetailsPage() {
     }
   }, [product, settings.currency_code]);
 
-  // Auto-select first available variant
+  // Auto-select initial size/color/fabric based on first available variant
   useEffect(() => {
     if (variants.length > 0 && !selectedVariant) {
-      const availableVariant = variants.find((v) => v.is_active && v.stock > 0);
-      if (availableVariant) setSelectedVariant(availableVariant);
-    }
-  }, [variants, selectedVariant]);
-
-  // Calculate effective price and stock based on selected variant
-  const effectivePrice = useMemo(() => {
-    if (selectedVariant) {
-      if (selectedVariant.variant_sale_price != null) {
-        return selectedVariant.variant_sale_price;
+      const availableVariant = variants.find((v) => v.is_active && v.stock > 0) || variants[0];
+      if (availableVariant) {
+        setSelectedVariant(availableVariant);
+        if (availableVariant.size && !selectedSize) setSelectedSize(availableVariant.size);
+        if (availableVariant.color && !selectedColor) {
+          const colors = availableVariant.color.split(",").map((c) => c.trim()).filter(Boolean);
+          if (colors.length > 0) setSelectedColor(colors[0]);
+        }
+        if (availableVariant.fabric && !selectedFabric) setSelectedFabric(availableVariant.fabric);
       }
-      if (selectedVariant.variant_price != null) {
-        return selectedVariant.variant_price;
+    }
+  }, [variants, selectedVariant, selectedSize, selectedColor, selectedFabric]);
+
+  // Find variant matching the currently selected fabric
+  const selectedFabricVariant = useMemo(() => {
+    if (!selectedFabric || variants.length === 0) return null;
+    const normFabric = selectedFabric.toLowerCase().trim();
+    return variants.find(
+      (v) => v.fabric && v.fabric.toLowerCase().trim() === normFabric && v.is_active
+    ) || null;
+  }, [selectedFabric, variants]);
+
+  // Calculate effective price and stock based on selected variant (prioritizing fabric variant)
+  const effectivePrice = useMemo(() => {
+    const activeVar = selectedFabricVariant || selectedVariant;
+    if (activeVar) {
+      if (activeVar.variant_sale_price != null) {
+        return activeVar.variant_sale_price;
+      }
+      if (activeVar.variant_price != null) {
+        return activeVar.variant_price;
       }
     }
     return product?.sale_price || product?.price || 0;
-  }, [product, selectedVariant]);
+  }, [product, selectedVariant, selectedFabricVariant]);
 
   const effectiveStock = selectedVariant?.stock ?? product?.stock ?? 0;
   const hasVariants = variants.length > 0 && (product as any)?.is_variable;
@@ -179,31 +294,45 @@ export default function ProductDetailsPage() {
     setIsAddingToCart(true);
     await new Promise((resolve) => setTimeout(resolve, 300));
 
+    const fabricSuffix = selectedFabric ? `-${selectedFabric}` : "";
+    const cartItemId = selectedVariant
+      ? `${product.id}-${selectedVariant.id}${fabricSuffix}`
+      : `${product.id}${fabricSuffix}`;
+
+    const variantSpecs = [
+      selectedVariant?.size,
+      selectedColor || selectedVariant?.color,
+      selectedFabric
+    ].filter(Boolean);
+
+    const activeVarForPrice = selectedFabricVariant || selectedVariant;
+
     addItem({
-      id: selectedVariant ? `${product.id}-${selectedVariant.id}` : product.id,
-      name: selectedVariant
-        ? `${product.name} (${[selectedVariant.size, selectedColor || selectedVariant.color].filter(Boolean).join(" / ")})`
+      id: cartItemId,
+      productId: product.id,
+      slug: product.slug,
+      name: variantSpecs.length > 0
+        ? `${product.name} (${variantSpecs.join(" / ")})`
         : product.name,
       price:
-        selectedVariant?.variant_price != null
-          ? selectedVariant.variant_price
+        activeVarForPrice?.variant_price != null
+          ? activeVarForPrice.variant_price
           : product.price,
       salePrice:
-        selectedVariant?.variant_sale_price != null
-          ? selectedVariant.variant_sale_price
-          : selectedVariant?.variant_price != null
+        activeVarForPrice?.variant_sale_price != null
+          ? activeVarForPrice.variant_sale_price
+          : activeVarForPrice?.variant_price != null
             ? undefined
             : product.sale_price || undefined,
       image: product.images[0] || "/placeholder.svg",
       quantity,
       stock: effectiveStock,
-      variantId: selectedVariant?.id,
-      variantInfo: selectedVariant
-        ? {
-          size: selectedVariant.size,
-          color: selectedColor || selectedVariant.color,
-        }
-        : undefined,
+      variantId: activeVarForPrice?.id || selectedVariant?.id || null,
+      variantInfo: {
+        size: selectedVariant?.size || null,
+        color: selectedColor || selectedVariant?.color || null,
+        fabric: selectedFabric || null,
+      },
     });
 
     trackAddToCart({
@@ -229,31 +358,45 @@ export default function ProductDetailsPage() {
 
     setIsBuyingNow(true);
 
+    const fabricSuffix = selectedFabric ? `-${selectedFabric}` : "";
+    const cartItemId = selectedVariant
+      ? `${product.id}-${selectedVariant.id}${fabricSuffix}`
+      : `${product.id}${fabricSuffix}`;
+
+    const variantSpecs = [
+      selectedVariant?.size,
+      selectedColor || selectedVariant?.color,
+      selectedFabric
+    ].filter(Boolean);
+
+    const activeVarForPrice = selectedFabricVariant || selectedVariant;
+
     addItem({
-      id: selectedVariant ? `${product.id}-${selectedVariant.id}` : product.id,
-      name: selectedVariant
-        ? `${product.name} (${[selectedVariant.size, selectedColor || selectedVariant.color].filter(Boolean).join(" / ")})`
+      id: cartItemId,
+      productId: product.id,
+      slug: product.slug,
+      name: variantSpecs.length > 0
+        ? `${product.name} (${variantSpecs.join(" / ")})`
         : product.name,
       price:
-        selectedVariant?.variant_price != null
-          ? selectedVariant.variant_price
+        activeVarForPrice?.variant_price != null
+          ? activeVarForPrice.variant_price
           : product.price,
       salePrice:
-        selectedVariant?.variant_sale_price != null
-          ? selectedVariant.variant_sale_price
-          : selectedVariant?.variant_price != null
+        activeVarForPrice?.variant_sale_price != null
+          ? activeVarForPrice.variant_sale_price
+          : activeVarForPrice?.variant_price != null
             ? undefined
             : product.sale_price || undefined,
       image: product.images[0] || "/placeholder.svg",
       quantity,
       stock: effectiveStock,
-      variantId: selectedVariant?.id,
-      variantInfo: selectedVariant
-        ? {
-          size: selectedVariant.size,
-          color: selectedColor || selectedVariant.color,
-        }
-        : undefined,
+      variantId: activeVarForPrice?.id || selectedVariant?.id || null,
+      variantInfo: {
+        size: selectedVariant?.size || null,
+        color: selectedColor || selectedVariant?.color || null,
+        fabric: selectedFabric || null,
+      },
     });
 
     trackAddToCart({
@@ -475,11 +618,46 @@ export default function ProductDetailsPage() {
               )}
             </div>
 
-            {/* Short Description */}
-            {product.short_description && (
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {product.short_description}
-              </p>
+
+
+            {/* Fabric Selector */}
+            {fabricOptions.length > 0 && (
+              <div className="bg-card border border-border/50 rounded-2xl p-4.5 shadow-2xs space-y-3">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                  <span>Fabric (ফ্যাব্রিক):</span>
+                  {selectedFabric && (
+                    <span className="text-accent font-extrabold normal-case bg-accent/10 px-2 py-0.5 rounded-md text-xs">
+                      {selectedFabric}
+                    </span>
+                  )}
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {fabricOptions.map((fabric) => {
+                    const isSelected = selectedFabric === fabric.name;
+                    return (
+                      <button
+                        key={fabric.id}
+                        type="button"
+                        onClick={() => setSelectedFabric(fabric.name)}
+                        className={cn(
+                          "p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between gap-1.5 select-none",
+                          isSelected
+                            ? "border-accent bg-accent/10 text-accent ring-1 ring-accent/40 shadow-2xs scale-[1.01]"
+                            : "border-border/50 bg-card text-foreground hover:border-accent/40 hover:bg-secondary/30",
+                        )}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="font-extrabold text-xs">{fabric.name}</span>
+                          {isSelected && <CheckCircle2 className="h-4 w-4 text-accent" />}
+                        </div>
+                        <span className="text-[10px] text-muted-foreground font-medium leading-relaxed hidden sm:block">
+                          {fabric.desc}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             )}
 
             {/* Variant Selector */}
@@ -489,7 +667,11 @@ export default function ProductDetailsPage() {
                   variants={variants.filter((v) => v.is_active)}
                   selectedVariant={selectedVariant}
                   onSelect={setSelectedVariant}
+                  selectedSize={selectedSize}
+                  onSizeSelect={setSelectedSize}
+                  selectedColor={selectedColor}
                   onColorSelect={setSelectedColor}
+                  selectedFabric={selectedFabric}
                 />
               </div>
             )}

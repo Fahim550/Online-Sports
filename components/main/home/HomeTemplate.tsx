@@ -40,7 +40,7 @@ function NewArrivalsSection({ section }: { section: HomepageSection }) {
           className={`flex items-center justify-between mb-8 reveal-left ${isVisible ? "reveal-visible" : ""}`}
         >
           <div>
-            <h2 className="text-xl md:text-2xl">
+            <h2 className="text-xl md:text-1xl">
               {section.title || "New Arrivals"}
             </h2>
           </div>
@@ -51,8 +51,8 @@ function NewArrivalsSection({ section }: { section: HomepageSection }) {
             View All <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        <div className="product-grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-3">
-          {newArrivals.slice(0, 10).map((product, index) => (
+        <div className="product-grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-3">
+          {newArrivals.slice(0, 8).map((product, index) => (
             <div
               key={product.id}
               className={`reveal-base stagger-${index + 1} ${isVisible ? "reveal-visible" : ""}`}
@@ -61,10 +61,10 @@ function NewArrivalsSection({ section }: { section: HomepageSection }) {
             </div>
           ))}
         </div>
-        <div className="flex sm:hidden justify-center mt-6">
+        <div className="flex justify-center mt-8">
           <Link
             href="/shop?filter=new"
-            className="w-full text-center py-2.5 px-5 border border-accent text-accent font-semibold rounded-xl text-sm transition-all duration-300 hover:bg-accent hover:text-white"
+            className="w-full sm:w-auto min-w-[180px] text-center py-2.5 px-10 border border-accent text-accent font-semibold rounded-xl text-sm transition-all duration-300 hover:bg-accent hover:text-white"
           >
             View All
           </Link>

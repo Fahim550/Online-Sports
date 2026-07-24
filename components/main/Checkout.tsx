@@ -126,7 +126,7 @@ export default function CheckoutPage() {
       country: settings.default_country_name,
       notes: "",
       items: items.map((item) => ({
-        product_id: item.id,
+        product_id: item.productId || item.id,
         product_name: item.name,
         unit_price: item.salePrice ?? item.price,
         quantity: item.quantity,
@@ -249,9 +249,10 @@ export default function CheckoutPage() {
         },
         items: items.map((item) => {
           const productId =
-            item.id.includes("-") && item.variantId
+            item.productId ||
+            (item.id.includes("-") && item.variantId
               ? item.id.replace(`-${item.variantId}`, "")
-              : item.id;
+              : item.id);
           return {
             product_id: productId,
             product_name: item.name,

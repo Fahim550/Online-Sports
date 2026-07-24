@@ -133,7 +133,7 @@ export default function CartPage() {
                   {/* Image & Details */}
                   <div className="flex gap-4 items-center min-w-0">
                     <Link
-                      href={`/products/${item.id}`}
+                      href={`/products/${item.slug || item.id.split("-").slice(0, 5).join("-")}`}
                       className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-secondary shrink-0 relative border border-border/60 group-hover:border-accent/30 transition-colors"
                     >
                       <Image
@@ -146,7 +146,7 @@ export default function CartPage() {
 
                     <div className="flex-1 min-w-0">
                       <Link
-                        href={`/products/${item.id}`}
+                        href={`/products/${item.slug || item.id.split("-").slice(0, 5).join("-")}`}
                         className="font-bold text-sm sm:text-base text-foreground hover:text-accent transition-colors line-clamp-2 leading-snug"
                       >
                         {item.name}
