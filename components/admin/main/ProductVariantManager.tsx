@@ -99,10 +99,20 @@ export function ProductVariantManager({
           ...variantData,
         });
       } else {
-        await createVariant.mutateAsync({
-          product_id: productId,
-          ...variantData,
-        } as any);
+        const sizes = formData.size ? formData.size.split(",").map(s => s.trim()).filter(Boolean) : [null];
+        const baseSku = formData.sku || `VAR-${Date.now()}`;
+        
+        for (let i = 0; i < sizes.length; i++) {
+          const s = sizes[i];
+          await createVariant.mutateAsync({
+            product_id: productId,
+            ...variantData,
+            size: s,
+            sku: sizes.length > 1 && s ? `${baseSku}-${s.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}` : baseSku,
+          } as any);
+          
+          if (sizes.length > 1) await new Promise(resolve => setTimeout(resolve, 50));
+        }
       }
       setIsDialogOpen(false);
       setEditingVariant(null);
@@ -158,8 +168,51 @@ export function ProductVariantManager({
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Size (Optional)
+                  Size (Optional) — {editingVariant ? "select a size" : "tap multiple to create separate variants for each size"}
                 </label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {["S", "M", "L", "XL", "XXL"].map((sizeOpt) => {
+                    const selectedSizes = formData.size
+                      ? formData.size
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                      : [];
+                    const isSelected = selectedSizes.includes(sizeOpt);
+                    return (
+                      <button
+                        key={sizeOpt}
+                        type="button"
+                        onClick={() => {
+                          if (editingVariant) {
+                            setFormData({
+                              ...formData,
+                              size: sizeOpt,
+                            });
+                          } else {
+                            let updated: string[];
+                            if (isSelected) {
+                              updated = selectedSizes.filter((s) => s !== sizeOpt);
+                            } else {
+                              updated = [...selectedSizes, sizeOpt];
+                            }
+                            setFormData({
+                              ...formData,
+                              size: updated.join(", "),
+                            });
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                          isSelected
+                            ? "border-accent bg-accent text-accent-foreground"
+                            : "border-border hover:border-accent/50"
+                        }`}
+                      >
+                        {sizeOpt}
+                      </button>
+                    );
+                  })}
+                </div>
                 <input
                   type="text"
                   value={formData.size}

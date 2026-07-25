@@ -30,6 +30,9 @@ interface StoreData {
   footer_text: string;
   topbar_text: string;
   topbar_enabled: string;
+  // WhatsApp Banner
+  whatsapp_banner_enabled: string;
+  whatsapp_banner_title: string;
 }
 
 interface Props {
@@ -362,6 +365,58 @@ export function StoreSettingsTab({
                 })
               }
             />
+          </div>
+        </div>
+      </div>
+
+      {/* WhatsApp Banner Section */}
+      <div className="bg-card rounded-xl border border-border p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Megaphone className="h-5 w-5 text-accent" />
+          <h2 className="text-lg font-semibold">WhatsApp Banner</h2>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          Home page, Shop page এবং Product details page এ footer এর উপরে একটি WhatsApp banner দেখাবে।
+        </p>
+        <div className="grid grid-cols-1 gap-4">
+          <div className="flex items-center justify-between p-4 border border-border rounded-lg">
+            <div>
+              <label className="text-sm font-medium">WhatsApp Banner সক্রিয় করুন</label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Banner চালু/বন্ধ করুন
+              </p>
+            </div>
+            <Switch
+              checked={storeData.whatsapp_banner_enabled === "true"}
+              onCheckedChange={(checked) =>
+                setStoreData({
+                  ...storeData,
+                  whatsapp_banner_enabled: checked ? "true" : "false",
+                })
+              }
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Banner Title
+            </label>
+            <input
+              type="text"
+              value={storeData.whatsapp_banner_title}
+              onChange={(e) =>
+                setStoreData({ ...storeData, whatsapp_banner_title: e.target.value })
+              }
+              className="input-shop"
+              placeholder="Have questions? Chat with us on WhatsApp!"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Banner এ দেখানো title লিখুন
+            </p>
+          </div>
+          <div className="p-3 bg-muted/50 rounded-lg border border-border/60">
+            <p className="text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground">Note:</span> Banner এ WhatsApp number হিসেবে উপরের Social Links এ দেওয়া WhatsApp Number ব্যবহার হবে।
+            </p>
           </div>
         </div>
       </div>

@@ -268,8 +268,37 @@ export default function TrackOrderPage() {
                 </h3>
 
                 <div className="bg-background border border-border/80 rounded-2xl divide-y divide-border/60">
-                  {order.order_items?.map((item: any) => (
-                    <div key={item.id} className="p-4 flex items-center justify-between gap-4">
+                  {Object.values(
+                    order.order_items?.reduce((acc: any, item: any) => {
+                      const color = item.variant_info?.color || "";
+                      const fabric = item.variant_info?.fabric || "";
+                      const key = `${item.product_id}-${color}-${fabric}-${item.price}`;
+
+                      if (!acc[key]) {
+                        const baseName = item.product_name.includes(" (")
+                          ? item.product_name.substring(0, item.product_name.lastIndexOf(" ("))
+                          : item.product_name;
+
+                        acc[key] = {
+                          ...item,
+                          product_name: baseName || item.product_name,
+                          grouped_sizes: [],
+                          total_quantity: 0,
+                          group_total_price: 0,
+                        };
+                      }
+
+                      if (item.variant_info?.size) {
+                        acc[key].grouped_sizes.push({ size: item.variant_info.size, qty: item.quantity });
+                      }
+
+                      acc[key].total_quantity += item.quantity;
+                      acc[key].group_total_price += item.price * item.quantity;
+
+                      return acc;
+                    }, {}) || {}
+                  ).map((item: any, index: number) => (
+                    <div key={item.id || index} className="p-4 flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3 min-w-0">
                         {item.product_image && (
                           <div className="w-12 h-12 rounded-xl bg-secondary overflow-hidden shrink-0 relative border border-border/60">
@@ -283,12 +312,36 @@ export default function TrackOrderPage() {
                         )}
                         <div className="min-w-0">
                           <p className="font-bold text-xs text-foreground truncate">{item.product_name}</p>
-                          <p className="text-[11px] text-muted-foreground">Qty: {item.quantity} × {formatCurrency(item.price)}</p>
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {item.variant_info?.color && (
+                              <span className="inline-flex items-center gap-1 rounded-md bg-secondary px-1.5 py-0.5 text-[10px]">
+                                <span className="font-medium text-muted-foreground">Color:</span>
+                                <span className="font-semibold">{item.variant_info.color}</span>
+                              </span>
+                            )}
+                            {item.variant_info?.fabric && (
+                              <span className="inline-flex items-center gap-1 rounded-md bg-secondary px-1.5 py-0.5 text-[10px]">
+                                <span className="font-medium text-muted-foreground">Fabric:</span>
+                                <span className="font-semibold">{item.variant_info.fabric}</span>
+                              </span>
+                            )}
+                          </div>
+                          {item.grouped_sizes?.length > 0 && (
+                            <div className="mt-1 text-[10px] flex flex-wrap items-center gap-1">
+                              <span className="text-muted-foreground font-medium">Sizes:</span>
+                              {item.grouped_sizes.map((s: any, idx: number) => (
+                                <span key={idx} className="font-bold text-foreground">
+                                  {s.size} <span className="text-muted-foreground font-normal">({s.qty})</span>{idx < item.grouped_sizes.length - 1 ? ", " : ""}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-[11px] text-muted-foreground mt-1">Qty: {item.total_quantity} × {formatCurrency(item.price)}</p>
                         </div>
                       </div>
 
                       <span className="font-bold text-xs text-foreground shrink-0">
-                        {formatCurrency(item.price * item.quantity)}
+                        {formatCurrency(item.group_total_price)}
                       </span>
                     </div>
                   ))}

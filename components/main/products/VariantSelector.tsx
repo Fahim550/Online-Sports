@@ -2,18 +2,20 @@
 
 import { ProductVariant } from "@/hooks/useVariants";
 import { cn } from "@/lib/utils";
-import { Check, Ruler } from "lucide-react";
+import { Check, Ruler, Edit2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface VariantSelectorProps {
   variants: ProductVariant[];
   selectedVariant: ProductVariant | null;
   onSelect: (variant: ProductVariant) => void;
-  selectedSize: string | null;
-  onSizeSelect: (size: string | null) => void;
+  sizeQuantities: Record<string, number>;
+  onSizeQuantityChange: (size: string, quantity: number, maxStock: number) => void;
   selectedColor: string | null;
   onColorSelect: (color: string | null) => void;
+  fabricOptions?: { id: string; name: string; desc?: string }[];
   selectedFabric?: string | null;
+  onFabricSelect?: (fabric: string) => void;
 }
 
 // Map common color names to CSS color hex/values
@@ -40,13 +42,16 @@ export function VariantSelector({
   variants,
   selectedVariant,
   onSelect,
-  selectedSize,
-  onSizeSelect,
+  sizeQuantities,
+  onSizeQuantityChange,
   selectedColor,
   onColorSelect,
+  fabricOptions,
   selectedFabric,
+  onFabricSelect,
 }: VariantSelectorProps) {
   const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [showSizeSelector, setShowSizeSelector] = useState(false);
 
   // Extract unique sizes
   const sizes = [
@@ -145,7 +150,9 @@ export function VariantSelector({
 
   const handleColorSelect = (color: string) => {
     onColorSelect(color);
-    const variant = findVariant(selectedSize, color, selectedFabric);
+    // When color changes, we might want to update selectedVariant based on the first size that has quantity, or just the first available
+    const activeSize = Object.keys(sizeQuantities).find(s => sizeQuantities[s] > 0) || null;
+    const variant = findVariant(activeSize, color, selectedFabric);
     if (variant) {
       onSelect(variant);
     }
@@ -163,33 +170,59 @@ export function VariantSelector({
           .includes(color) &&
         v.stock > 0 &&
         v.is_active &&
-        (!selectedSize || v.size === selectedSize || !v.size),
+        (!selectedFabric || v.fabric === selectedFabric || !v.fabric)
     );
 
-  const visibleColors = selectedSize
-    ? [
-        ...new Set(
-          variants
-            .filter((v) => v.size === selectedSize && v.color)
-            .flatMap((v) => v.color!.split(",").map((c) => c.trim()))
-            .filter(Boolean),
-        ),
-      ]
-    : allColors;
+  const visibleColors = allColors.filter(color => 
+    variants.some(v => 
+      v.color?.split(",").map((c) => c.trim()).includes(color) && 
+      (!selectedFabric || v.fabric === selectedFabric)
+    )
+  );
 
   return (
     <div className="space-y-5">
-      {/* Size Selector */}
-      {sizes.length > 0 && (
+      {/* Fabric Selector */}
+      {fabricOptions && fabricOptions.length > 0 && onFabricSelect && (
         <div className="space-y-2.5">
+          <label className="text-xs font-extrabold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+            <span>Fabric (ফ্যাব্রিক):</span>
+            {selectedFabric && (
+              <span className="text-accent font-extrabold normal-case bg-accent/10 px-2 py-0.5 rounded-md text-xs">
+                {selectedFabric}
+              </span>
+            )}
+          </label>
+          <div className="flex flex-wrap gap-2.5">
+            {fabricOptions.map((fabric) => {
+              const isSelected = selectedFabric === fabric.name;
+              return (
+                <button
+                  key={fabric.id}
+                  type="button"
+                  onClick={() => onFabricSelect(fabric.name)}
+                  className={cn(
+                    "min-w-[48px] h-10 px-4 rounded-xl border text-xs font-extrabold transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 select-none",
+                    isSelected
+                      ? "border-accent bg-accent/10 text-accent ring-1 ring-accent/40 shadow-2xs scale-105"
+                      : "border-border/50 bg-card text-foreground hover:border-accent/40 hover:bg-secondary/30",
+                  )}
+                >
+                  <span>{fabric.name}</span>
+                  {isSelected && <Check className="h-3.5 w-3.5 text-accent stroke-[3]" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Size Selector (Bulk Quantities) */}
+      {sizes.length > 0 && (
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
             <label className="text-xs font-extrabold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-              <span>Size:</span>
-              {selectedSize && (
-                <span className="text-accent font-extrabold normal-case bg-accent/10 px-2 py-0.5 rounded-md text-xs">
-                  {selectedSize}
-                </span>
-              )}
+              <span>Size & Quantity:</span>
             </label>
 
             <button
@@ -202,28 +235,46 @@ export function VariantSelector({
             </button>
           </div>
 
-          <div className="flex flex-wrap gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
             {sizes.map((size) => {
-              const available = isSizeAvailable(size);
-              const isSelected = selectedSize === size;
+              const availableVariant = variants.find((v) => v.size === size && v.stock > 0 && v.is_active && (!selectedColor || v.color?.includes(selectedColor)) && (!selectedFabric || v.fabric === selectedFabric));
+              const maxStock = availableVariant?.stock || 0;
+              const currentQty = sizeQuantities[size] || 0;
+              const isAvailable = maxStock > 0;
+
               return (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={() => handleSizeSelect(size)}
-                  disabled={!available}
-                  className={cn(
-                    "min-w-[48px] h-10 px-4 rounded-xl border text-xs font-extrabold transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 select-none",
-                    isSelected
-                      ? "border-accent bg-accent/10 text-accent ring-1 ring-accent/40 shadow-2xs scale-105"
-                      : available
-                        ? "border-border/50 bg-card text-foreground hover:border-accent/40 hover:bg-secondary/30"
-                        : "border-border/30 bg-muted/30 text-muted-foreground/40 cursor-not-allowed line-through",
+                <div key={size} className={cn("flex flex-col items-center justify-center p-2.5 rounded-xl border transition-all duration-200", isAvailable ? (currentQty > 0 ? "bg-accent/5 border-accent shadow-xs ring-1 ring-accent/20" : "bg-card border-border/60 hover:border-accent/50 hover:shadow-2xs") : "bg-muted/30 border-border/30 opacity-50")}>
+                  <div className="flex flex-col items-center gap-0.5 mb-2.5">
+                    <span className={cn("font-black text-sm uppercase", currentQty > 0 ? "text-accent" : "text-foreground")}>{size}</span>
+                    {!isAvailable && (
+                      <span className="text-[10px] text-muted-foreground font-medium">Out of Stock</span>
+                    )}
+                  </div>
+                  
+                  {isAvailable && (
+                    <div className="flex items-center bg-secondary/40 border border-border/50 rounded-lg p-0.5 w-full justify-between">
+                      <button 
+                        type="button"
+                        className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-background hover:shadow-xs transition-all disabled:opacity-30 cursor-pointer"
+                        onClick={() => onSizeQuantityChange(size, Math.max(0, currentQty - 1), maxStock)}
+                        disabled={currentQty <= 0}
+                      >
+                        <span className="text-xl font-medium leading-none mb-0.5">-</span>
+                      </button>
+                      <div className="text-center font-bold text-sm text-foreground flex-1">
+                        {currentQty}
+                      </div>
+                      <button 
+                        type="button"
+                        className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-background hover:shadow-xs transition-all disabled:opacity-30 cursor-pointer"
+                        onClick={() => onSizeQuantityChange(size, Math.min(maxStock, currentQty + 1), maxStock)}
+                        disabled={currentQty >= maxStock}
+                      >
+                        <span className="text-xl font-medium leading-none mb-0.5">+</span>
+                      </button>
+                    </div>
                   )}
-                >
-                  <span>{size}</span>
-                  {isSelected && <Check className="h-3.5 w-3.5 text-accent stroke-[3]" />}
-                </button>
+                </div>
               );
             })}
           </div>

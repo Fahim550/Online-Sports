@@ -68,7 +68,10 @@ export default function AdminSettings() {
     footer_text: "",
     topbar_text: "",
     topbar_enabled: "true",
+    whatsapp_banner_enabled: "false",
+    whatsapp_banner_title: "",
   });
+
 
   const [pixelData, setPixelData] = useState({
     fb_pixel_enabled: false,

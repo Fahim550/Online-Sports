@@ -50,7 +50,6 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-
 export default function ShopPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -148,7 +147,7 @@ export default function ShopPage() {
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (searchQuery) count++;
-    if (selectedCategory !== "all") count++;
+    if (selectedCategory && selectedCategory !== "all") count += selectedCategory.split(",").length;
     if (selectedStatus !== "all") count++;
     if (minPrice !== "" || maxPrice !== "") count++;
     if (inStockOnly) count++;
@@ -170,6 +169,49 @@ export default function ShopPage() {
   // Sidebar Filter Component
   const renderFilterContent = (onItemClick?: () => void) => (
     <div className="space-y-6">
+      {/* Price Range Filter (Moved UP) */}
+      <div className="space-y-3">
+        <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+          <span>Max Price: ৳{maxPrice || 1000}</span>
+          {maxPrice !== "" && (
+            <button
+              onClick={() => {
+                setMaxPrice("");
+                setMinPrice("");
+              }}
+              className="text-[10px] cursor-pointer bg-accent/10 text-accent hover:bg-accent hover:text-white px-2 py-0.5 rounded-full transition-colors flex items-center gap-1 font-medium"
+            >
+              <RotateCcw className="h-2.5 w-2.5" />
+              Reset
+            </button>
+          )}
+        </h3>
+
+        <div className="pt-2 pb-1">
+          <input
+            type="range"
+            min="0"
+            max="1000"
+            step="10"
+            value={maxPrice !== "" ? maxPrice : 1000}
+            onChange={(e) => {
+              setMaxPrice(e.target.value);
+              setMinPrice("0");
+            }}
+            style={{
+              background: `linear-gradient(to right, hsl(var(--accent)) ${((maxPrice !== "" ? Number(maxPrice) : 1000) / 1000) * 100}%, hsl(var(--secondary)) ${((maxPrice !== "" ? Number(maxPrice) : 1000) / 1000) * 100}%)`
+            }}
+            className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-accent"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
+            <span>৳0</span>
+            <span>৳1000</span>
+          </div>
+        </div>
+      </div>
+
+      <hr className="border-border/60" />
+
       {/* Categories */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -177,123 +219,55 @@ export default function ShopPage() {
             <Tag className="h-3.5 w-3.5" />
             Categories
           </h3>
-        </div>
-        {/* Category List: Adjust max-h-[320px] below to change number of categories visible upfront before scrolling */}
-        <div className="space-y-1 max-h-[320px] overflow-y-auto pr-1 text-xs font-medium scrollbar-thin">
-          <button
-            onClick={() => {
-              setSelectedCategory("all");
-              onItemClick?.();
-            }}
-            className={`flex items-center justify-between w-full px-3.5 py-1.5 rounded-xl text-sm font-medium transition-all duration-200 ${selectedCategory === "all"
-              ? "bg-accent text-accent-foreground shadow-sm font-semibold"
-              : "text-foreground/80 hover:bg-secondary hover:text-foreground"
-              }`}
-          >
-            <span>All Products</span>
-          </button>
-          {categories.map((cat) => {
-            const count = categoryCounts[cat.id] || 0;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  setSelectedCategory(cat.slug);
-                  onItemClick?.();
-                }}
-                className={`flex items-center justify-between w-full px-3.5 py-1.5 rounded-xl text-sm font-medium transition-all duration-200 ${selectedCategory === cat.slug
-                  ? "bg-accent text-accent-foreground shadow-sm font-semibold"
-                  : "text-foreground/80 hover:bg-secondary hover:text-foreground"
-                  }`}
-              >
-                <span className="truncate pr-2">{cat.name}</span>
-                {count > 0 && (
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${selectedCategory === cat.slug
-                      ? "bg-accent-foreground/20 text-accent-foreground"
-                      : "bg-muted text-muted-foreground"
-                      }`}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <hr className="border-border/60" />
-
-      {/* Price Range Filter */}
-      <div className="space-y-3">
-        <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground flex items-center justify-between">
-          <span>Price Range</span>
-          {(minPrice !== "" || maxPrice !== "") && (
+          {selectedCategory && selectedCategory !== "all" && (
             <button
-              onClick={() => {
-                setMinPrice("");
-                setMaxPrice("");
-              }}
-              className="text-[11px] text-accent hover:underline lowercase font-normal"
+              onClick={() => setSelectedCategory("all")}
+              className="text-[10px] cursor-pointer bg-accent/10 text-accent hover:bg-accent hover:text-white px-2 py-0.5 rounded-full transition-colors flex items-center gap-1 font-medium"
             >
+              <RotateCcw className="h-2.5 w-2.5" />
               Reset
             </button>
           )}
-        </h3>
-
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="text-[11px] text-muted-foreground block mb-1">Min Price</label>
-            <input
-              type="number"
-              placeholder="0"
-              value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
-              className="w-full h-9 px-3 text-xs rounded-lg border border-input bg-background focus:outline-none focus:ring-1 focus:ring-accent"
-            />
-          </div>
-          <div>
-            <label className="text-[11px] text-muted-foreground block mb-1">Max Price</label>
-            <input
-              type="number"
-              placeholder="5000"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-              className="w-full h-9 px-3 text-xs rounded-lg border border-input bg-background focus:outline-none focus:ring-1 focus:ring-accent"
-            />
-          </div>
         </div>
-
-        {/* Quick price presets */}
-        <div className="flex flex-wrap gap-1.5 pt-1">
-          <button
-            onClick={() => {
-              setMinPrice("0");
-              setMaxPrice("1000");
-            }}
-            className="text-[11px] px-2.5 py-1 rounded-md bg-secondary/80 hover:bg-secondary text-foreground/80 transition-colors"
-          >
-            Under ৳1,000
-          </button>
-          <button
-            onClick={() => {
-              setMinPrice("1000");
-              setMaxPrice("3000");
-            }}
-            className="text-[11px] px-2.5 py-1 rounded-md bg-secondary/80 hover:bg-secondary text-foreground/80 transition-colors"
-          >
-            ৳1K - ৳3K
-          </button>
-          <button
-            onClick={() => {
-              setMinPrice("3000");
-              setMaxPrice("");
-            }}
-            className="text-[11px] px-2.5 py-1 rounded-md bg-secondary/80 hover:bg-secondary text-foreground/80 transition-colors"
-          >
-            Over ৳3,000
-          </button>
+        <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1 text-xs font-medium scrollbar-thin">
+          {categories.map((cat) => {
+            const count = categoryCounts[cat.id] || 0;
+            const isSelected = selectedCategory.split(",").includes(cat.slug);
+            return (
+              <label
+                key={cat.id}
+                className="flex items-center gap-2.5 w-full px-2 py-1.5 rounded-xl hover:bg-secondary cursor-pointer transition-colors"
+              >
+                <div
+                  className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${isSelected
+                    ? "bg-accent border-accent text-accent-foreground"
+                    : "border-input bg-background"
+                    }`}
+                >
+                  {isSelected && <Check className="h-3 w-3" />}
+                </div>
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={isSelected}
+                  onChange={(e) => {
+                    const current = selectedCategory && selectedCategory !== "all" ? selectedCategory.split(",") : [];
+                    let newCategories;
+                    if (e.target.checked) {
+                      newCategories = [...current.filter(c => c !== ""), cat.slug];
+                    } else {
+                      newCategories = current.filter(c => c !== cat.slug);
+                    }
+                    setSelectedCategory(newCategories.length > 0 ? newCategories.join(",") : "all");
+                  }}
+                />
+                <span className="truncate flex-1 text-foreground/80">{cat.name}</span>
+                {count > 0 && (
+                  <span className="text-[10px] text-muted-foreground ml-auto">{count}</span>
+                )}
+              </label>
+            );
+          })}
         </div>
       </div>
 
@@ -333,7 +307,8 @@ export default function ShopPage() {
   );
 
   return (
-    <div className="bg-background min-h-screen">
+    <>
+      <div className="bg-background min-h-screen">
       {/* Top Banner & Breadcrumb Header */}
       <div className="bg-secondary/40 border-b border-border/60 py-6 md:py-8 mb-6">
         <div className="container-shop">
@@ -345,11 +320,13 @@ export default function ShopPage() {
             </Link>
             <ChevronRight className="h-3 w-3" />
             <span className="text-foreground font-medium">Shop</span>
-            {selectedCategory !== "all" && (
+            {selectedCategory && selectedCategory !== "all" && (
               <>
                 <ChevronRight className="h-3 w-3" />
                 <span className="text-accent font-semibold capitalize">
-                  {categories.find((c) => c.slug === selectedCategory)?.name || selectedCategory}
+                  {selectedCategory.split(",").length > 1
+                    ? `${selectedCategory.split(",").length} Categories`
+                    : categories.find((c) => c.slug === selectedCategory)?.name || selectedCategory}
                 </span>
               </>
             )}
@@ -360,7 +337,9 @@ export default function ShopPage() {
             <div>
               <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
                 {selectedCategory !== "all"
-                  ? categories.find((c) => c.slug === selectedCategory)?.name || "Shop Collection"
+                  ? (selectedCategory.split(",").length > 1 
+                      ? "Multiple Categories" 
+                      : categories.find((c) => c.slug === selectedCategory)?.name || "Shop Collection")
                   : "All Products"}
               </h1>
               <p className="hidden md:block text-xs md:text-sm text-muted-foreground mt-1">
@@ -578,12 +557,16 @@ export default function ShopPage() {
                   </Badge>
                 )}
 
-                {selectedCategory !== "all" && (
-                  <Badge variant="secondary" className="gap-1 text-xs py-1 px-2.5 rounded-lg">
-                    <span>Category: {categories.find((c) => c.slug === selectedCategory)?.name || selectedCategory}</span>
-                    <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => setSelectedCategory("all")} />
+                {selectedCategory && selectedCategory !== "all" && selectedCategory.split(",").map(slug => (
+                  <Badge key={slug} variant="secondary" className="gap-1 text-xs py-1 px-2.5 rounded-lg">
+                    <span>Category: {categories.find((c) => c.slug === slug)?.name || slug}</span>
+                    <X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => {
+                      const current = selectedCategory.split(",");
+                      const newCategories = current.filter(c => c !== slug);
+                      setSelectedCategory(newCategories.length > 0 ? newCategories.join(",") : "all");
+                    }} />
                   </Badge>
-                )}
+                ))}
 
                 {selectedStatus !== "all" && (
                   <Badge variant="secondary" className="gap-1 text-xs py-1 px-2.5 rounded-lg">
@@ -736,5 +719,6 @@ export default function ShopPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

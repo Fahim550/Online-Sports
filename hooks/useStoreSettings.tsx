@@ -50,6 +50,9 @@ export interface StoreSettings {
   whatsapp_order_enabled: string;
   topbar_text: string;
   topbar_enabled: string;
+  // WhatsApp banner
+  whatsapp_banner_enabled: string;
+  whatsapp_banner_title: string;
   // Legal pages
   privacy_title: string;
   privacy_content: string;
@@ -110,6 +113,8 @@ const DEFAULT_STORE_SETTINGS: StoreSettings = {
   whatsapp_order_enabled: "false",
   topbar_text: "Free Shipping on Orders Over ৳500!",
   topbar_enabled: "true",
+  whatsapp_banner_enabled: "false",
+  whatsapp_banner_title: "Have questions? Chat with us on WhatsApp!",
   privacy_title: "Privacy Policy",
   privacy_content: "",
   terms_title: "Terms & Conditions",

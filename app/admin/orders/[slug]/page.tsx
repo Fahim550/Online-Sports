@@ -300,8 +300,37 @@ export default function AdminOrderDetails() {
           <div className="bg-card rounded-xl border border-border p-6">
             <h2 className="font-semibold mb-4">Order Items</h2>
             <div className="space-y-4">
-              {order.order_items?.map((item: any) => (
-                <div key={item.id} className="flex gap-4 items-center">
+              {Object.values(
+                order.order_items?.reduce((acc: any, item: any) => {
+                  const color = item.variant_info?.color || "";
+                  const fabric = item.variant_info?.fabric || "";
+                  const key = `${item.product_id}-${color}-${fabric}-${item.price}`;
+
+                  if (!acc[key]) {
+                    const baseName = item.product_name.includes(" (")
+                      ? item.product_name.substring(0, item.product_name.lastIndexOf(" ("))
+                      : item.product_name;
+
+                    acc[key] = {
+                      ...item,
+                      product_name: baseName || item.product_name,
+                      grouped_sizes: [],
+                      total_quantity: 0,
+                      group_total_price: 0,
+                    };
+                  }
+
+                  if (item.variant_info?.size) {
+                    acc[key].grouped_sizes.push({ size: item.variant_info.size, qty: item.quantity });
+                  }
+
+                  acc[key].total_quantity += item.quantity;
+                  acc[key].group_total_price += item.price * item.quantity;
+
+                  return acc;
+                }, {}) || {}
+              ).map((item: any) => (
+                <div key={item.id || item.product_id} className="flex gap-4 items-center border-b border-border/50 pb-4 last:border-0 last:pb-0">
                   <Image
                     src={item.product_image || "/placeholder.svg"}
                     alt={item.product_name}
@@ -310,37 +339,39 @@ export default function AdminOrderDetails() {
                     className="w-14 h-14 rounded-lg object-cover bg-secondary"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm line-clamp-1">
+                    <p className="font-medium text-sm">
                       {item.product_name}
                     </p>
-                    {item.variant_info &&
-                      typeof item.variant_info === "object" && (
-                        <div className="flex flex-wrap gap-1.5 mt-1">
-                          {Object.entries(
-                            item.variant_info as Record<string, any>,
-                          )
-                            .filter(([_, v]) => v != null && v !== "")
-                            .map(([key, value]) => (
-                              <span
-                                key={key}
-                                className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-xs"
-                              >
-                                <span className="font-medium capitalize text-muted-foreground">
-                                  {key}:
-                                </span>
-                                <span className="font-semibold">
-                                  {String(value)}
-                                </span>
-                              </span>
-                            ))}
-                        </div>
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {item.variant_info?.color && (
+                        <span className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-xs">
+                          <span className="font-medium text-muted-foreground">Color:</span>
+                          <span className="font-semibold">{item.variant_info.color}</span>
+                        </span>
                       )}
+                      {item.variant_info?.fabric && (
+                        <span className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-xs">
+                          <span className="font-medium text-muted-foreground">Fabric:</span>
+                          <span className="font-semibold">{item.variant_info.fabric}</span>
+                        </span>
+                      )}
+                    </div>
+                    {item.grouped_sizes?.length > 0 && (
+                      <div className="mt-1.5 text-xs flex flex-wrap items-center gap-1">
+                        <span className="text-muted-foreground font-medium">Sizes:</span>
+                        {item.grouped_sizes.map((s: any, idx: number) => (
+                          <span key={idx} className="font-bold text-foreground">
+                            {s.size} <span className="text-muted-foreground font-normal">({s.qty})</span>{idx < item.grouped_sizes.length - 1 ? ", " : ""}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <p className="text-xs text-muted-foreground mt-1">
-                      {formatCurrency(item.price)} × {item.quantity}
+                      {formatCurrency(item.price)} × {item.total_quantity}
                     </p>
                   </div>
-                  <p className="font-medium text-sm">
-                    {formatCurrency(item.price * item.quantity)}
+                  <p className="font-bold text-sm">
+                    {formatCurrency(item.group_total_price)}
                   </p>
                 </div>
               ))}

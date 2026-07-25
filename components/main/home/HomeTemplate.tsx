@@ -8,7 +8,6 @@ import { CustomerReviews } from "@/components/main/home/CustomerReviews";
 import { TrustBadges } from "@/components/main/home/TrustBadges";
 import { PromoBanners } from "@/components/main/home/PromoBanners";
 import { PromoOffers } from "@/components/main/home/PromoOffers";
-
 import { ProductCard } from "@/components/main/products/ProductCard";
 import { HomepageSection } from "@/hooks/useHomePageTemplates";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
@@ -106,7 +105,7 @@ export function DefaultHomepage({ sections }: { sections: HomepageSection[] }) {
         }
 
         return (
-          <React.Fragment key={section.id}>
+        <React.Fragment key={section.id}>
             {section.section_type === "customer_reviews" && (
               <PromoOffers />
             )}

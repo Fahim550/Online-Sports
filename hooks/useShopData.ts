@@ -122,17 +122,20 @@ export const useFilteredShopProducts = (params: ShopFilterParams) => {
       limit,
     ],
     queryFn: async () => {
-      let categoryId: string | null = null;
+      let categoryIds: string[] = [];
 
       if (categorySlug && categorySlug !== "all") {
-        const { data: categoryData } = await supabase
-          .from("categories")
-          .select("id")
-          .eq("slug", categorySlug)
-          .maybeSingle();
+        const slugs = categorySlug.split(",").map((s) => s.trim()).filter(Boolean);
+        
+        if (slugs.length > 0) {
+          const { data: categoryData } = await supabase
+            .from("categories")
+            .select("id")
+            .in("slug", slugs);
 
-        if (categoryData) {
-          categoryId = categoryData.id;
+          if (categoryData && categoryData.length > 0) {
+            categoryIds = categoryData.map(c => c.id);
+          }
         }
       }
 
@@ -147,8 +150,8 @@ export const useFilteredShopProducts = (params: ShopFilterParams) => {
         query = query.or(`name.ilike.%${q}%,description.ilike.%${q}%,sku.ilike.%${q}%`);
       }
 
-      if (categoryId) {
-        query = query.eq("category_id", categoryId);
+      if (categoryIds.length > 0) {
+        query = query.in("category_id", categoryIds);
       }
 
       if (statusFilter === "new") {

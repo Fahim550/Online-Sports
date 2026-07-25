@@ -41,6 +41,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { WhatsAppBanner } from "@/components/main/WhatsAppBanner";
 
 const DEFAULT_FABRIC_DESCS: Record<string, string> = {
   "dri-fit (ড্রাই-ফিট)": "Lightweight, stretchable & sweat-wicking. Best for playing.",
@@ -74,7 +75,7 @@ export default function ProductDetailsPage() {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     null,
   );
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({});
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedFabric, setSelectedFabric] = useState<string>("Dri-Fit (ড্রাই-ফিট)");
   const [showReviewForm, setShowReviewForm] = useState(true); // Default open in reviews tab
@@ -115,17 +116,18 @@ export default function ProductDetailsPage() {
     }
   }, [fabricOptions, selectedFabric]);
 
-  // Find matching variant when fabric/size/color changes to update active price and stock
+  // Find matching variant when fabric/color changes to update active price and stock
   useEffect(() => {
     if (variants.length > 0) {
       const normFabric = selectedFabric ? selectedFabric.toLowerCase().trim() : "";
       const normColor = selectedColor ? selectedColor.toLowerCase().trim() : "";
+      const activeSize = Object.keys(sizeQuantities).find(s => sizeQuantities[s] > 0) || null;
 
       const match =
         // 1. Match Fabric + Size + Color
         variants.find((v) => {
           const fabricMatch = v.fabric && v.fabric.toLowerCase().trim() === normFabric;
-          const sizeMatch = selectedSize ? v.size === selectedSize : !v.size;
+          const sizeMatch = activeSize ? v.size === activeSize : !v.size;
           const colors = v.color ? v.color.split(",").map((c) => c.trim().toLowerCase()) : [];
           const colorMatch = normColor ? colors.includes(normColor) : !v.color;
           return fabricMatch && sizeMatch && colorMatch && v.is_active;
@@ -133,7 +135,7 @@ export default function ProductDetailsPage() {
         // 2. Match Fabric + Size
         variants.find((v) => {
           const fabricMatch = v.fabric && v.fabric.toLowerCase().trim() === normFabric;
-          const sizeMatch = selectedSize ? v.size === selectedSize : !v.size;
+          const sizeMatch = activeSize ? v.size === activeSize : !v.size;
           return fabricMatch && sizeMatch && v.is_active;
         }) ||
         // 3. Match Fabric only
@@ -143,14 +145,14 @@ export default function ProductDetailsPage() {
         }) ||
         // 4. Match Size + Color only
         variants.find((v) => {
-          const sizeMatch = selectedSize ? v.size === selectedSize : !v.size;
+          const sizeMatch = activeSize ? v.size === activeSize : !v.size;
           const colors = v.color ? v.color.split(",").map((c) => c.trim().toLowerCase()) : [];
           const colorMatch = normColor ? colors.includes(normColor) : !v.color;
           return sizeMatch && colorMatch && v.is_active;
         }) ||
         // 5. Match Size only
         variants.find((v) => {
-          const sizeMatch = selectedSize ? v.size === selectedSize : !v.size;
+          const sizeMatch = activeSize ? v.size === activeSize : !v.size;
           return sizeMatch && v.is_active;
         });
 
@@ -158,7 +160,7 @@ export default function ProductDetailsPage() {
         setSelectedVariant(match);
       }
     }
-  }, [selectedFabric, selectedSize, selectedColor, variants, selectedVariant?.id]);
+  }, [selectedFabric, sizeQuantities, selectedColor, variants, selectedVariant?.id]);
 
   const whatsappEnabled =
     storeSettings?.whatsapp_order_enabled === "true" &&
@@ -184,7 +186,9 @@ export default function ProductDetailsPage() {
       const availableVariant = variants.find((v) => v.is_active && v.stock > 0) || variants[0];
       if (availableVariant) {
         setSelectedVariant(availableVariant);
-        if (availableVariant.size && !selectedSize) setSelectedSize(availableVariant.size);
+        if (availableVariant.size && Object.keys(sizeQuantities).length === 0) {
+          setSizeQuantities({ [availableVariant.size]: 1 });
+        }
         if (availableVariant.color && !selectedColor) {
           const colors = availableVariant.color.split(",").map((c) => c.trim()).filter(Boolean);
           if (colors.length > 0) setSelectedColor(colors[0]);
@@ -192,7 +196,7 @@ export default function ProductDetailsPage() {
         if (availableVariant.fabric && !selectedFabric) setSelectedFabric(availableVariant.fabric);
       }
     }
-  }, [variants, selectedVariant, selectedSize, selectedColor, selectedFabric]);
+  }, [variants, selectedVariant, sizeQuantities, selectedColor, selectedFabric]);
 
   // Find variant matching the currently selected fabric
   const selectedFabricVariant = useMemo(() => {
@@ -286,8 +290,16 @@ export default function ProductDetailsPage() {
     : 0;
 
   const handleAddToCart = async () => {
+    const activeSizes = Object.keys(sizeQuantities).filter(s => sizeQuantities[s] > 0);
+    const hasSizes = variants.some(v => v.size);
+
     if (hasVariants && !selectedVariant) {
-      toast.error("Please select size/color variant");
+      toast.error("Please select a variant");
+      return;
+    }
+
+    if (hasSizes && activeSizes.length === 0) {
+      toast.error("Please select at least one size quantity");
       return;
     }
 
@@ -295,117 +307,164 @@ export default function ProductDetailsPage() {
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     const fabricSuffix = selectedFabric ? `-${selectedFabric}` : "";
-    const cartItemId = selectedVariant
-      ? `${product.id}-${selectedVariant.id}${fabricSuffix}`
-      : `${product.id}${fabricSuffix}`;
+    let totalAdded = 0;
 
-    const variantSpecs = [
-      selectedVariant?.size,
-      selectedColor || selectedVariant?.color,
-      selectedFabric
-    ].filter(Boolean);
+    const addToCartLogic = (size: string | undefined, qty: number) => {
+      // Find the specific variant for this size (if applicable)
+      const specificVariant = hasSizes && size ? variants.find(v => 
+        v.size === size && 
+        (!selectedColor || v.color?.includes(selectedColor)) && 
+        (!selectedFabric || v.fabric === selectedFabric)
+      ) || selectedVariant : selectedVariant;
 
-    const activeVarForPrice = selectedFabricVariant || selectedVariant;
+      const cartItemId = specificVariant
+        ? `${product.id}-${specificVariant.id}${fabricSuffix}`
+        : `${product.id}${fabricSuffix}`;
 
-    addItem({
-      id: cartItemId,
-      productId: product.id,
-      slug: product.slug,
-      name: variantSpecs.length > 0
-        ? `${product.name} (${variantSpecs.join(" / ")})`
-        : product.name,
-      price:
-        activeVarForPrice?.variant_price != null
-          ? activeVarForPrice.variant_price
-          : product.price,
-      salePrice:
-        activeVarForPrice?.variant_sale_price != null
-          ? activeVarForPrice.variant_sale_price
-          : activeVarForPrice?.variant_price != null
-            ? undefined
-            : product.sale_price || undefined,
-      image: product.images[0] || "/placeholder.svg",
-      quantity,
-      stock: effectiveStock,
-      variantId: activeVarForPrice?.id || selectedVariant?.id || undefined,
-      variantInfo: {
-        size: selectedVariant?.size || undefined,
-        color: selectedColor || selectedVariant?.color || undefined,
-        fabric: selectedFabric || undefined,
-      },
-    });
+      const variantSpecs = [
+        size || specificVariant?.size,
+        selectedColor || specificVariant?.color,
+        selectedFabric
+      ].filter(Boolean);
 
-    trackAddToCart({
-      contentId: product.id,
-      contentName: product.name,
-      value: effectivePrice * quantity,
-      currency: settings.currency_code,
-      quantity,
-    });
+      const activeVarForPrice = specificVariant || selectedVariant;
+
+      addItem({
+        id: cartItemId,
+        productId: product.id,
+        slug: product.slug,
+        name: variantSpecs.length > 0
+          ? `${product.name} (${variantSpecs.join(" / ")})`
+          : product.name,
+        price:
+          activeVarForPrice?.variant_price != null
+            ? activeVarForPrice.variant_price
+            : product.price,
+        salePrice:
+          activeVarForPrice?.variant_sale_price != null
+            ? activeVarForPrice.variant_sale_price
+            : activeVarForPrice?.variant_price != null
+              ? undefined
+              : product.sale_price || undefined,
+        image: product.images[0] || "/placeholder.svg",
+        quantity: qty,
+        stock: activeVarForPrice?.stock || effectiveStock,
+        variantId: activeVarForPrice?.id || undefined,
+        variantInfo: {
+          size: size || specificVariant?.size || undefined,
+          color: selectedColor || specificVariant?.color || undefined,
+          fabric: selectedFabric || undefined,
+        },
+      });
+
+      trackAddToCart({
+        contentId: product.id,
+        contentName: product.name,
+        value: (activeVarForPrice?.variant_sale_price ?? activeVarForPrice?.variant_price ?? effectivePrice) * qty,
+        currency: settings.currency_code,
+        quantity: qty,
+      });
+
+      totalAdded += qty;
+    };
+
+    if (hasSizes && activeSizes.length > 0) {
+      activeSizes.forEach(size => {
+        addToCartLogic(size, sizeQuantities[size]);
+      });
+    } else {
+      addToCartLogic(undefined, quantity);
+    }
 
     toast.success(t("product.addedToCart") || "Product added to cart", {
-      description: `${quantity}x ${product.name}`,
+      description: `${totalAdded}x ${product.name}`,
     });
 
     setIsAddingToCart(false);
   };
 
   const handleBuyNow = async () => {
+    const activeSizes = Object.keys(sizeQuantities).filter(s => sizeQuantities[s] > 0);
+    const hasSizes = variants.some(v => v.size);
+
     if (hasVariants && !selectedVariant) {
-      toast.error("Please select size/color variant");
+      toast.error("Please select a variant");
+      return;
+    }
+
+    if (hasSizes && activeSizes.length === 0) {
+      toast.error("Please select at least one size quantity");
       return;
     }
 
     setIsBuyingNow(true);
 
     const fabricSuffix = selectedFabric ? `-${selectedFabric}` : "";
-    const cartItemId = selectedVariant
-      ? `${product.id}-${selectedVariant.id}${fabricSuffix}`
-      : `${product.id}${fabricSuffix}`;
 
-    const variantSpecs = [
-      selectedVariant?.size,
-      selectedColor || selectedVariant?.color,
-      selectedFabric
-    ].filter(Boolean);
+    const addToCartLogic = (size: string | undefined, qty: number) => {
+      // Find the specific variant for this size (if applicable)
+      const specificVariant = hasSizes && size ? variants.find(v => 
+        v.size === size && 
+        (!selectedColor || v.color?.includes(selectedColor)) && 
+        (!selectedFabric || v.fabric === selectedFabric)
+      ) || selectedVariant : selectedVariant;
 
-    const activeVarForPrice = selectedFabricVariant || selectedVariant;
+      const cartItemId = specificVariant
+        ? `${product.id}-${specificVariant.id}${fabricSuffix}`
+        : `${product.id}${fabricSuffix}`;
 
-    addItem({
-      id: cartItemId,
-      productId: product.id,
-      slug: product.slug,
-      name: variantSpecs.length > 0
-        ? `${product.name} (${variantSpecs.join(" / ")})`
-        : product.name,
-      price:
-        activeVarForPrice?.variant_price != null
-          ? activeVarForPrice.variant_price
-          : product.price,
-      salePrice:
-        activeVarForPrice?.variant_sale_price != null
-          ? activeVarForPrice.variant_sale_price
-          : activeVarForPrice?.variant_price != null
-            ? undefined
-            : product.sale_price || undefined,
-      image: product.images[0] || "/placeholder.svg",
-      quantity,
-      stock: effectiveStock,
-      variantId: activeVarForPrice?.id || selectedVariant?.id || undefined,
-      variantInfo: {
-        size: selectedVariant?.size || undefined,
-        color: selectedColor || selectedVariant?.color || undefined,
-        fabric: selectedFabric || undefined,
-      },
-    });
+      const variantSpecs = [
+        size || specificVariant?.size,
+        selectedColor || specificVariant?.color,
+        selectedFabric
+      ].filter(Boolean);
 
-    trackAddToCart({
-      contentId: product.id,
-      contentName: product.name,
-      value: effectivePrice * quantity,
-      currency: settings.currency_code,
-      quantity,
-    });
+      const activeVarForPrice = specificVariant || selectedVariant;
+
+      addItem({
+        id: cartItemId,
+        productId: product.id,
+        slug: product.slug,
+        name: variantSpecs.length > 0
+          ? `${product.name} (${variantSpecs.join(" / ")})`
+          : product.name,
+        price:
+          activeVarForPrice?.variant_price != null
+            ? activeVarForPrice.variant_price
+            : product.price,
+        salePrice:
+          activeVarForPrice?.variant_sale_price != null
+            ? activeVarForPrice.variant_sale_price
+            : activeVarForPrice?.variant_price != null
+              ? undefined
+              : product.sale_price || undefined,
+        image: product.images[0] || "/placeholder.svg",
+        quantity: qty,
+        stock: activeVarForPrice?.stock || effectiveStock,
+        variantId: activeVarForPrice?.id || undefined,
+        variantInfo: {
+          size: size || specificVariant?.size || undefined,
+          color: selectedColor || specificVariant?.color || undefined,
+          fabric: selectedFabric || undefined,
+        },
+      });
+
+      trackAddToCart({
+        contentId: product.id,
+        contentName: product.name,
+        value: (activeVarForPrice?.variant_sale_price ?? activeVarForPrice?.variant_price ?? effectivePrice) * qty,
+        currency: settings.currency_code,
+        quantity: qty,
+      });
+    };
+
+    if (hasSizes && activeSizes.length > 0) {
+      activeSizes.forEach(size => {
+        addToCartLogic(size, sizeQuantities[size]);
+      });
+    } else {
+      addToCartLogic(undefined, quantity);
+    }
 
     router.push("/checkout?mode=buynow");
   };
@@ -620,46 +679,6 @@ export default function ProductDetailsPage() {
 
 
 
-            {/* Fabric Selector */}
-            {fabricOptions.length > 0 && (
-              <div className="bg-card border border-border/50 rounded-2xl p-4.5 shadow-2xs space-y-3">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-                  <span>Fabric (ফ্যাব্রিক):</span>
-                  {selectedFabric && (
-                    <span className="text-accent font-extrabold normal-case bg-accent/10 px-2 py-0.5 rounded-md text-xs">
-                      {selectedFabric}
-                    </span>
-                  )}
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {fabricOptions.map((fabric) => {
-                    const isSelected = selectedFabric === fabric.name;
-                    return (
-                      <button
-                        key={fabric.id}
-                        type="button"
-                        onClick={() => setSelectedFabric(fabric.name)}
-                        className={cn(
-                          "p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between gap-1.5 select-none",
-                          isSelected
-                            ? "border-accent bg-accent/10 text-accent ring-1 ring-accent/40 shadow-2xs scale-[1.01]"
-                            : "border-border/50 bg-card text-foreground hover:border-accent/40 hover:bg-secondary/30",
-                        )}
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <span className="font-extrabold text-xs">{fabric.name}</span>
-                          {isSelected && <CheckCircle2 className="h-4 w-4 text-accent" />}
-                        </div>
-                        <span className="text-[10px] text-muted-foreground font-medium leading-relaxed hidden sm:block">
-                          {fabric.desc}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
             {/* Variant Selector */}
             {hasVariants && (
               <div className="bg-card border border-border/50 rounded-2xl p-4.5 shadow-2xs">
@@ -667,45 +686,61 @@ export default function ProductDetailsPage() {
                   variants={variants.filter((v) => v.is_active)}
                   selectedVariant={selectedVariant}
                   onSelect={setSelectedVariant}
-                  selectedSize={selectedSize}
-                  onSizeSelect={setSelectedSize}
+                  sizeQuantities={sizeQuantities}
+                  onSizeQuantityChange={(size, qty) => {
+                    setSizeQuantities(prev => ({ ...prev, [size]: qty }));
+                  }}
                   selectedColor={selectedColor}
                   onColorSelect={setSelectedColor}
+                  fabricOptions={fabricOptions}
                   selectedFabric={selectedFabric}
+                  onFabricSelect={(fabric) => {
+                    setSelectedFabric(fabric);
+                    const validColorsForFabric = new Set(
+                      variants
+                        .filter(v => v.fabric === fabric)
+                        .flatMap(v => v.color?.split(",").map(c => c.trim()) || [])
+                    );
+                    if (selectedColor && !validColorsForFabric.has(selectedColor)) {
+                      setSelectedColor(null);
+                    }
+                  }}
                 />
               </div>
             )}
 
             {/* Quantity Picker & Primary Order Buttons */}
             <div className="space-y-4 pt-2">
-              <div className="flex items-center gap-4">
-                <span className="text-xs font-bold text-foreground uppercase tracking-wider">Qty</span>
-                <div className="inline-flex items-center border border-border/80 rounded-xl overflow-hidden bg-card">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10 rounded-none hover:bg-secondary cursor-pointer"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    disabled={quantity <= 1}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <div className="h-10 w-12 flex items-center justify-center text-sm font-bold border-x border-border/80">
-                    {quantity}
+              {!variants.some(v => v.size) && (
+                <div className="flex items-center gap-4">
+                  <span className="text-xs font-bold text-foreground uppercase tracking-wider">Qty</span>
+                  <div className="inline-flex items-center border border-border/80 rounded-xl overflow-hidden bg-card">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10 rounded-none hover:bg-secondary cursor-pointer"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      disabled={quantity <= 1}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <div className="h-10 w-12 flex items-center justify-center text-sm font-bold border-x border-border/80">
+                      {quantity}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10 rounded-none hover:bg-secondary cursor-pointer"
+                      onClick={() =>
+                        setQuantity(Math.min(effectiveStock, quantity + 1))
+                      }
+                      disabled={quantity >= effectiveStock}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10 rounded-none hover:bg-secondary cursor-pointer"
-                    onClick={() =>
-                      setQuantity(Math.min(effectiveStock, quantity + 1))
-                    }
-                    disabled={quantity >= effectiveStock}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
                 </div>
-              </div>
+              )}
 
               {/* Desktop Main Action Buttons */}
               <div className="hidden md:flex flex-col gap-3">
@@ -852,6 +887,9 @@ export default function ProductDetailsPage() {
               </div>
             </div>
           )}
+
+          {/* WhatsApp Banner after Description */}
+          {activeTab === "description" && <WhatsAppBanner />}
 
           {/* Tab 2: Additional information Content */}
           {activeTab === "additional" && (
