@@ -327,11 +327,11 @@ export default function ProductDetailsPage() {
       image: product.images[0] || "/placeholder.svg",
       quantity,
       stock: effectiveStock,
-      variantId: activeVarForPrice?.id || selectedVariant?.id || null,
+      variantId: activeVarForPrice?.id || selectedVariant?.id || undefined,
       variantInfo: {
-        size: selectedVariant?.size || null,
-        color: selectedColor || selectedVariant?.color || null,
-        fabric: selectedFabric || null,
+        size: selectedVariant?.size || undefined,
+        color: selectedColor || selectedVariant?.color || undefined,
+        fabric: selectedFabric || undefined,
       },
     });
 
@@ -391,11 +391,11 @@ export default function ProductDetailsPage() {
       image: product.images[0] || "/placeholder.svg",
       quantity,
       stock: effectiveStock,
-      variantId: activeVarForPrice?.id || selectedVariant?.id || null,
+      variantId: activeVarForPrice?.id || selectedVariant?.id || undefined,
       variantInfo: {
-        size: selectedVariant?.size || null,
-        color: selectedColor || selectedVariant?.color || null,
-        fabric: selectedFabric || null,
+        size: selectedVariant?.size || undefined,
+        color: selectedColor || selectedVariant?.color || undefined,
+        fabric: selectedFabric || undefined,
       },
     });
 
