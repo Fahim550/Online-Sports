@@ -228,7 +228,7 @@ export function VariantSelector({
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+          <div className="grid grid-cols-3 lg:grid-cols-5 gap-2.5">
             {sizes.map((size) => {
               const availableVariant = variants.find((v) => v.size === size && v.stock > 0 && v.is_active && (!selectedColor || v.color?.includes(selectedColor)) && (!selectedFabric || v.fabric === selectedFabric));
               const maxStock = availableVariant?.stock || 0;
