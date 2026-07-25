@@ -228,7 +228,7 @@ export function VariantSelector({
             </button>
           </div>
 
-          <div className="grid grid-cols-3 lg:grid-cols-5 gap-2.5">
+          <div className="flex flex-wrap lg:grid lg:grid-cols-5 gap-2.5">
             {sizes.map((size) => {
               const availableVariant = variants.find((v) => v.size === size && v.stock > 0 && v.is_active && (!selectedColor || v.color?.includes(selectedColor)) && (!selectedFabric || v.fabric === selectedFabric));
               const maxStock = availableVariant?.stock || 0;
@@ -236,7 +236,7 @@ export function VariantSelector({
               const isAvailable = maxStock > 0;
 
               return (
-                <div key={size} className={cn("flex flex-col items-center justify-center p-2.5 rounded-xl border transition-all duration-200", isAvailable ? (currentQty > 0 ? "bg-accent/5 border-accent shadow-xs ring-1 ring-accent/20" : "bg-card border-border/60 hover:border-accent/50 hover:shadow-2xs") : "bg-muted/30 border-border/30 opacity-50")}>
+                <div key={size} className={cn("flex-1 min-w-[28%] lg:min-w-0 flex flex-col items-center justify-center p-2.5 rounded-xl border transition-all duration-200", isAvailable ? (currentQty > 0 ? "bg-accent/5 border-accent shadow-xs ring-1 ring-accent/20" : "bg-card border-border/60 hover:border-accent/50 hover:shadow-2xs") : "bg-muted/30 border-border/30 opacity-50")}>
                   <div className="flex flex-col items-center gap-0.5 mb-2.5">
                     <span className={cn("font-black text-sm uppercase", currentQty > 0 ? "text-accent" : "text-foreground")}>{size}</span>
                     {!isAvailable && (
