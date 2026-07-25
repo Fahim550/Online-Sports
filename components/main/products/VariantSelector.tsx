@@ -140,13 +140,6 @@ export function VariantSelector({
     return null;
   };
 
-  const handleSizeSelect = (size: string) => {
-    onSizeSelect(size);
-    const variant = findVariant(size, selectedColor, selectedFabric);
-    if (variant) {
-      onSelect(variant);
-    }
-  };
 
   const handleColorSelect = (color: string) => {
     onColorSelect(color);
