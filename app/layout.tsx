@@ -18,11 +18,46 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://suyeb-online-sports.vercel.app"), // Replace with actual production domain when available
   title: {
     template: "%s | Suyeb Online Sports",
     default: "Suyeb Online Sports | Premium Sports Gear & Clothing",
   },
-  description: "Find premium sports gear, clothing, and equipment at Suyeb Online Sports. Fast shipping and 100% genuine products.",
+  description:
+    "Find premium sports gear, clothing, and equipment at Suyeb Online Sports. Fast shipping and 100% genuine products.",
+  keywords: ["Sports Gear", "Sports Clothing", "Online Sports Shop", "Suyeb Sports", "Fitness Equipment", "Athletic Wear", "Bangladesh Sports Shop"],
+  authors: [{ name: "Suyeb Online Sports" }],
+  creator: "SoftZeniq IT",
+  publisher: "Suyeb Online Sports",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    title: "Suyeb Online Sports | Premium Sports Gear",
+    description: "Your ultimate destination for authentic sports gear, apparel, and accessories.",
+    url: "/",
+    siteName: "Suyeb Online Sports",
+    locale: "bn_BD",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Suyeb Online Sports | Premium Sports Gear",
+    description: "Your premium destination for authentic sports gear, apparel, and accessories.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 // Helper function to convert hex color to HSL string
