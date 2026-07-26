@@ -62,6 +62,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const ratingInfo = getProductRating(product.id);
   const ratingValue = ratingInfo.avgRating;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const isStockHidden = hideStockMap[product.id] ?? (product as any)?.hide_stock ?? false;
   const isOutOfStock = product.stock <= 0 || isStockHidden;
 

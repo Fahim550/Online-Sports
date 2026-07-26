@@ -58,6 +58,7 @@ export function HeroSlider() {
 
   useEffect(() => {
     if (!(isLoading || isFetching)) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setIsStuck(false);
       return;
     }
@@ -76,7 +77,7 @@ export function HeroSlider() {
       <section className="relative overflow-hidden bg-secondary h-[240px] sm:h-[380px] md:h-[520px] lg:h-[600px] w-full rounded-none">
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center p-6">
           <p className="text-muted-foreground font-medium">
-            Couldn't load the slider.{" "}
+            Couldn&apos;t load the slider.{" "}
             {error instanceof Error ? error.message : ""}
           </p>
           <Button className="btn-accent" onClick={() => refetch()}>

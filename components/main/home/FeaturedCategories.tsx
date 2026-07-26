@@ -127,6 +127,7 @@ export function FeaturedCategories() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ScrollingRow({ items }: { items: any[] }) {
   return (
     <div className="flex items-center gap-3 overflow-x-auto pb-1 px-1 scrollbar-none w-full">
