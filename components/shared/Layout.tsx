@@ -4,6 +4,8 @@ import { Footer } from "./Footer";
 import { Header } from "./Header";
 import { WhatsAppBanner } from "@/components/main/WhatsAppBanner";
 
+import { MobileMarquee } from "@/components/main/MobileMarquee";
+
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -24,6 +26,7 @@ export function Layout({ children }: LayoutProps) {
       <main className="flex-1">{children}</main>
       {!isAdmin && showBanner && <WhatsAppBanner />}
       {!isAdmin && <Footer />}
+      {!isAdmin && <MobileMarquee />}
     </div>
   );
 }

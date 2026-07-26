@@ -34,6 +34,9 @@ interface StoreData {
   whatsapp_banner_enabled: string;
   whatsapp_banner_title: string;
   whatsapp_banner_number: string;
+  // Mobile Marquee
+  mobile_marquee_enabled: string;
+  mobile_marquee_text: string;
 }
 
 interface Props {
@@ -429,6 +432,53 @@ export function StoreSettingsTab({
             />
             <p className="text-xs text-muted-foreground mt-1">
               Banner এ এই WhatsApp number টি ব্যবহার হবে। Country code সহ লিখুন (যেমন: 8801...)
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Marquee Section */}
+      <div className="bg-card rounded-xl border border-border p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Megaphone className="h-5 w-5 text-accent" />
+          <h2 className="text-lg font-semibold">Mobile Marquee (News Ticker)</h2>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          This scrolling text will appear at the bottom of the screen on mobile devices only.
+        </p>
+        <div className="grid grid-cols-1 gap-4">
+          <div className="flex items-center justify-between p-4 border border-border rounded-lg">
+            <div>
+              <label className="text-sm font-medium">Enable Mobile Marquee</label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Turn on/off the mobile marquee
+              </p>
+            </div>
+            <Switch
+              checked={storeData.mobile_marquee_enabled === "true"}
+              onCheckedChange={(checked) =>
+                setStoreData({
+                  ...storeData,
+                  mobile_marquee_enabled: checked ? "true" : "false",
+                })
+              }
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Marquee Text
+            </label>
+            <input
+              type="text"
+              value={storeData.mobile_marquee_text}
+              onChange={(e) =>
+                setStoreData({ ...storeData, mobile_marquee_text: e.target.value })
+              }
+              className="input-shop"
+              placeholder="Welcome to our store! Enjoy free shipping on orders over 1000 Taka."
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              The promotional text to scroll at the bottom of mobile screens.
             </p>
           </div>
         </div>

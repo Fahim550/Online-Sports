@@ -61,6 +61,9 @@ export interface StoreSettings {
   terms_content: string;
   // Navigation / Header Categories
   header_categories: string;
+  // Mobile Marquee
+  mobile_marquee_enabled: string;
+  mobile_marquee_text: string;
 }
 
 const DEFAULT_STORE_SETTINGS: StoreSettings = {
@@ -118,10 +121,12 @@ const DEFAULT_STORE_SETTINGS: StoreSettings = {
   whatsapp_banner_title: "Have questions? Chat with us on WhatsApp!",
   whatsapp_banner_number: "",
   privacy_title: "Privacy Policy",
-  privacy_content: "",
-  terms_title: "Terms & Conditions",
-  terms_content: "",
+  privacy_content: "Your privacy policy content goes here.",
+  terms_title: "Terms of Service",
+  terms_content: "Your terms of service content goes here.",
   header_categories: "",
+  mobile_marquee_enabled: "false",
+  mobile_marquee_text: "Welcome to our store! Enjoy free shipping on orders over 1000 Taka.",
 };
 
 export const STORE_SETTINGS_QUERY_KEY = ["store-settings"];
