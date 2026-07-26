@@ -116,31 +116,37 @@ export function ProductCard({ product }: ProductCardProps) {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <Link href={`/products/${product.slug}`} className="block w-full h-full relative">
-            {product.images && product.images.length > 0 ? (
-              product.images.map((img, idx) => (
-                <Image
-                  key={idx}
-                  src={img}
-                  alt={`${product.name} - image ${idx + 1}`}
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out group-hover:scale-105 ${
-                    idx === currentImageIndex ? "opacity-100 z-10" : "opacity-0 z-0"
-                  }`}
-                  height={320}
-                  width={320}
-                  loading={idx === 0 ? "lazy" : "lazy"}
-                />
-              ))
-            ) : (
-              <Image
-                src="/placeholder.svg"
-                alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                height={320}
-                width={320}
-                loading="lazy"
-              />
-            )}
+          <Link href={`/products/${product.slug}`} className="block w-full h-full relative overflow-hidden">
+            <div 
+              className="flex w-full h-full transition-transform duration-500 ease-out" 
+              style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
+            >
+              {product.images && product.images.length > 0 ? (
+                product.images.map((img, idx) => (
+                  <div key={idx} className="w-full h-full flex-shrink-0 relative">
+                    <Image
+                      src={img}
+                      alt={`${product.name} - image ${idx + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      height={320}
+                      width={320}
+                      loading={idx === 0 ? "lazy" : "lazy"}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="w-full h-full flex-shrink-0 relative">
+                  <Image
+                    src="/placeholder.svg"
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                    height={320}
+                    width={320}
+                    loading="lazy"
+                  />
+                </div>
+              )}
+            </div>
           </Link>
 
           {/* Top Left Discount Badge (replacing the NEW badge position, aligned directly with corner) */}

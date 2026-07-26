@@ -46,7 +46,7 @@ export function HeroSlider() {
 
   if (isError) {
     return (
-      <section className="relative overflow-hidden bg-secondary h-[280px] sm:h-[380px] md:h-[520px] lg:h-[600px] w-full rounded-none">
+      <section className="relative overflow-hidden bg-secondary h-[240px] sm:h-[380px] md:h-[520px] lg:h-[600px] w-full rounded-none">
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center p-6">
           <p className="text-muted-foreground font-medium">
             Couldn't load the slider.{" "}
@@ -62,7 +62,7 @@ export function HeroSlider() {
 
   if (isLoading || isFetching) {
     return (
-      <section className="relative overflow-hidden bg-secondary h-[280px] sm:h-[380px] md:h-[520px] lg:h-[600px] w-full rounded-none">
+      <section className="relative overflow-hidden bg-secondary h-[240px] sm:h-[380px] md:h-[520px] lg:h-[600px] w-full rounded-none">
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
           {isStuck && (
@@ -77,7 +77,7 @@ export function HeroSlider() {
 
   if (slides.length === 0) {
     return (
-      <section className="relative overflow-hidden bg-secondary h-[280px] sm:h-[380px] md:h-[520px] lg:h-[600px] w-full rounded-none">
+      <section className="relative overflow-hidden bg-secondary h-[240px] sm:h-[380px] md:h-[520px] lg:h-[600px] w-full rounded-none">
         <div className="absolute inset-0 flex items-center justify-center">
           <p className="text-muted-foreground font-semibold">No slides configured</p>
         </div>
@@ -88,7 +88,7 @@ export function HeroSlider() {
   return (
     <section className="w-full p-3 md:px-0 md:pt-0 md:pb-6">
       {/* Slider Container */}
-      <div className="relative overflow-hidden group w-full rounded-xl md:rounded-none h-[280px] sm:h-[380px] md:h-[520px] lg:h-[600px]">
+      <div className="relative overflow-hidden group w-full rounded-xl md:rounded-none h-[240px] sm:h-[380px] md:h-[520px] lg:h-[600px]">
         {/* Slides */}
         {slides.map((slide, index) => {
           const isActive = index === currentSlide;
