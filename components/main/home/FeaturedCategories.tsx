@@ -130,7 +130,7 @@ export function FeaturedCategories() {
 function ScrollingRow({ items }: { items: any[] }) {
   return (
     <div
-      className="flex items-center gap-3 overflow-x-auto pb-1 px-1 scrollbar-none w-full select-none touch-pan-y"
+      className="flex items-center gap-3 overflow-x-auto pb-1 px-1 scrollbar-none w-full select-none"
       style={{ WebkitOverflowScrolling: "touch" }}
     >
       {items.map((category) => (
@@ -140,7 +140,7 @@ function ScrollingRow({ items }: { items: any[] }) {
         >
           <Link
             href={`/shop?category=${category.slug}`}
-            className="w-full aspect-square bg-secondary/40 border border-border/70 rounded-2xl flex items-center justify-center relative overflow-hidden shadow-2xs active:scale-95 transition-all duration-300 hover:border-accent/40"
+            className="w-full aspect-square bg-secondary/40 border border-border/70 rounded-2xl flex items-center justify-center relative overflow-hidden shadow-2xs transition-all duration-300 hover:border-accent/40"
           >
             <Image
               src={category.image}
