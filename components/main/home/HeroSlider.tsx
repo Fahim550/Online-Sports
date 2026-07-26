@@ -5,7 +5,7 @@ import { useSliderSlides } from "@/hooks/useShopData";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 export function HeroSlider() {
   const {
