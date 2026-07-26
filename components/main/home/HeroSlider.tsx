@@ -18,6 +18,8 @@ export function HeroSlider() {
   } = useSliderSlides();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isStuck, setIsStuck] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   const nextSlide = useCallback(() => {
     if (slides.length === 0) return;
@@ -28,6 +30,31 @@ export function HeroSlider() {
     if (slides.length === 0) return;
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
   }, [slides.length]);
+
+  // Swipe handlers
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      nextSlide();
+    } else if (isRightSwipe) {
+      prevSlide();
+    }
+  };
 
   useEffect(() => {
     if (!(isLoading || isFetching)) {
@@ -88,7 +115,12 @@ export function HeroSlider() {
   return (
     <section className="w-full p-3 md:px-0 md:pt-0 md:pb-6">
       {/* Slider Container */}
-      <div className="relative overflow-hidden group w-full rounded-xl md:rounded-none h-[240px] sm:h-[380px] md:h-[520px] lg:h-[600px]">
+      <div 
+        className="relative overflow-hidden group w-full rounded-xl md:rounded-none h-[240px] sm:h-[380px] md:h-[520px] lg:h-[600px]"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {/* Slides */}
         {slides.map((slide, index) => {
           const isActive = index === currentSlide;
