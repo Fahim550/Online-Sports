@@ -130,13 +130,13 @@ export function FeaturedCategories() {
 function ScrollingRow({ items }: { items: any[] }) {
   return (
     <div
-      className="flex items-center gap-3 overflow-x-auto pb-1 px-1 scrollbar-none w-full select-none snap-x snap-mandatory"
+      className="flex items-center gap-3 overflow-x-auto pb-1 px-1 scrollbar-none w-full select-none touch-pan-y"
       style={{ WebkitOverflowScrolling: "touch" }}
     >
       {items.map((category) => (
         <div
           key={category.id}
-          className="flex-shrink-0 w-24 flex flex-col items-center gap-1.5 text-center group snap-start"
+          className="flex-shrink-0 w-24 flex flex-col items-center gap-1.5 text-center group"
         >
           <Link
             href={`/shop?category=${category.slug}`}
