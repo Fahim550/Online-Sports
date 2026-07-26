@@ -129,10 +129,7 @@ export function FeaturedCategories() {
 
 function ScrollingRow({ items }: { items: any[] }) {
   return (
-    <div
-      className="flex items-center gap-3 overflow-x-auto pb-1 px-1 scrollbar-none w-full select-none"
-      style={{ WebkitOverflowScrolling: "touch" }}
-    >
+    <div className="flex items-center gap-3 overflow-x-auto pb-1 px-1 scrollbar-none w-full">
       {items.map((category) => (
         <div
           key={category.id}
@@ -140,19 +137,21 @@ function ScrollingRow({ items }: { items: any[] }) {
         >
           <Link
             href={`/shop?category=${category.slug}`}
+            draggable={false}
             className="w-full aspect-square bg-secondary/40 border border-border/70 rounded-2xl flex items-center justify-center relative overflow-hidden shadow-2xs transition-all duration-300 hover:border-accent/40"
           >
             <Image
               src={category.image}
               alt={category.name}
               fill
+              draggable={false}
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               sizes="96px"
             />
           </Link>
 
           {/* Name */}
-          <Link href={`/shop?category=${category.slug}`} className="block w-full text-center">
+          <Link href={`/shop?category=${category.slug}`} draggable={false} className="block w-full text-center">
             <span className="text-[11px] font-bold tracking-tight text-foreground/90 group-hover:text-accent transition-colors line-clamp-1 px-0.5 leading-tight">
               {category.name}
             </span>
