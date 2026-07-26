@@ -70,6 +70,7 @@ export default function AdminSettings() {
     topbar_enabled: "true",
     whatsapp_banner_enabled: "false",
     whatsapp_banner_title: "",
+    whatsapp_banner_number: "",
   });
 
 

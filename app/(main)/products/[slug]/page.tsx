@@ -311,9 +311,9 @@ export default function ProductDetailsPage() {
 
     const addToCartLogic = (size: string | undefined, qty: number) => {
       // Find the specific variant for this size (if applicable)
-      const specificVariant = hasSizes && size ? variants.find(v => 
-        v.size === size && 
-        (!selectedColor || v.color?.includes(selectedColor)) && 
+      const specificVariant = hasSizes && size ? variants.find(v =>
+        v.size === size &&
+        (!selectedColor || v.color?.includes(selectedColor)) &&
         (!selectedFabric || v.fabric === selectedFabric)
       ) || selectedVariant : selectedVariant;
 
@@ -403,9 +403,9 @@ export default function ProductDetailsPage() {
 
     const addToCartLogic = (size: string | undefined, qty: number) => {
       // Find the specific variant for this size (if applicable)
-      const specificVariant = hasSizes && size ? variants.find(v => 
-        v.size === size && 
-        (!selectedColor || v.color?.includes(selectedColor)) && 
+      const specificVariant = hasSizes && size ? variants.find(v =>
+        v.size === size &&
+        (!selectedColor || v.color?.includes(selectedColor)) &&
         (!selectedFabric || v.fabric === selectedFabric)
       ) || selectedVariant : selectedVariant;
 
@@ -889,7 +889,11 @@ export default function ProductDetailsPage() {
           )}
 
           {/* WhatsApp Banner after Description */}
-          {activeTab === "description" && <WhatsAppBanner />}
+          {activeTab === "description" && (
+            <div className="container mx-auto px-0 md:px-2 mt-12 -mb-4">
+              <WhatsAppBanner className="w-full" />
+            </div>
+          )}
 
           {/* Tab 2: Additional information Content */}
           {activeTab === "additional" && (

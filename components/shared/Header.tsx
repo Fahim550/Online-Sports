@@ -146,9 +146,9 @@ export function Header() {
                     <div className="p-5 border-b border-border/60 bg-secondary/30 flex items-center justify-between">
                       <Link href="/" className="flex items-center gap-2">
                         {isSettingsLoading ? (
-                          <div className="w-28 h-8 bg-muted/65 animate-pulse rounded-xl" />
+                          <div className="w-32 h-12 bg-muted/65 animate-pulse rounded-xl" />
                         ) : storeLogo ? (
-                          <Image src={storeLogo} alt={storeName} height={36} width={130} className="h-8 w-auto object-contain" />
+                          <Image src={storeLogo} alt={storeName} height={48} width={200} className="h-12 w-auto object-contain" />
                         ) : (
                           <span className="text-xl font-black tracking-tight text-foreground">{storeName}</span>
                         )}
@@ -300,15 +300,15 @@ export function Header() {
             <div className="flex-1 md:flex-initial flex justify-center md:justify-start shrink-0">
               <Link href="/" className="flex items-center group">
                 {isSettingsLoading ? (
-                  <div className="w-28 h-8 sm:h-9 bg-muted/65 animate-pulse rounded-xl" />
+                  <div className="w-32 h-10 sm:h-12 md:h-14 bg-muted/65 animate-pulse rounded-xl" />
                 ) : storeLogo ? (
                   <div className="relative overflow-hidden transition-transform duration-300 group-hover:scale-105">
                     <Image
                       src={storeLogo}
                       alt={storeName}
-                      height={40}
-                      width={140}
-                      className="h-7 sm:h-8 md:h-9 w-auto object-contain"
+                      height={56}
+                      width={200}
+                      className="h-10 sm:h-12 md:h-14 w-auto object-contain"
                     />
                   </div>
                 ) : (

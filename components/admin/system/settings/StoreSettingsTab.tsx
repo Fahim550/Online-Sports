@@ -33,6 +33,7 @@ interface StoreData {
   // WhatsApp Banner
   whatsapp_banner_enabled: string;
   whatsapp_banner_title: string;
+  whatsapp_banner_number: string;
 }
 
 interface Props {
@@ -413,9 +414,21 @@ export function StoreSettingsTab({
               Banner এ দেখানো title লিখুন
             </p>
           </div>
-          <div className="p-3 bg-muted/50 rounded-lg border border-border/60">
-            <p className="text-xs text-muted-foreground">
-              <span className="font-semibold text-foreground">Note:</span> Banner এ WhatsApp number হিসেবে উপরের Social Links এ দেওয়া WhatsApp Number ব্যবহার হবে।
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              WhatsApp Number for Banner
+            </label>
+            <input
+              type="tel"
+              value={storeData.whatsapp_banner_number}
+              onChange={(e) =>
+                setStoreData({ ...storeData, whatsapp_banner_number: e.target.value })
+              }
+              className="input-shop"
+              placeholder="+880 1234 567890"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Banner এ এই WhatsApp number টি ব্যবহার হবে। Country code সহ লিখুন (যেমন: 8801...)
             </p>
           </div>
         </div>

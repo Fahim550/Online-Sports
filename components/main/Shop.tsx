@@ -169,11 +169,11 @@ export default function ShopPage() {
   // Sidebar Filter Component
   const renderFilterContent = (onItemClick?: () => void) => (
     <div className="space-y-6">
-      {/* Price Range Filter (Moved UP) */}
+      {/* Price Range Filter */}
       <div className="space-y-3">
         <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground flex items-center justify-between">
-          <span>Max Price: ৳{maxPrice || 1000}</span>
-          {maxPrice !== "" && (
+          <span>Price Filter</span>
+          {(minPrice !== "" || maxPrice !== "") && (
             <button
               onClick={() => {
                 setMaxPrice("");
@@ -187,7 +187,39 @@ export default function ShopPage() {
           )}
         </h3>
 
-        <div className="pt-2 pb-1">
+        <div className="pt-2 pb-1 relative h-6">
+          {/* Background Track */}
+          <div className="absolute top-1/2 left-0 right-0 h-1.5 -translate-y-1/2 rounded-lg bg-secondary pointer-events-none" />
+          
+          {/* Active Range Track */}
+          <div 
+            className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-lg bg-accent pointer-events-none"
+            style={{
+               left: `${(Number(minPrice || 0) / 1000) * 100}%`,
+               right: `${100 - (Number(maxPrice !== "" ? maxPrice : 1000) / 1000) * 100}%`
+            }}
+          />
+
+          {/* Min Thumb */}
+          <input
+            type="range"
+            min="0"
+            max="1000"
+            step="10"
+            value={minPrice !== "" ? minPrice : 0}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              const max = Number(maxPrice !== "" ? maxPrice : 1000);
+              if (val > max) {
+                 setMinPrice(max.toString());
+              } else {
+                 setMinPrice(val.toString());
+              }
+            }}
+            className="absolute top-1/2 left-0 right-0 -translate-y-1/2 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-accent [&::-moz-range-thumb]:shadow-md cursor-pointer z-20"
+          />
+
+          {/* Max Thumb */}
           <input
             type="range"
             min="0"
@@ -195,18 +227,20 @@ export default function ShopPage() {
             step="10"
             value={maxPrice !== "" ? maxPrice : 1000}
             onChange={(e) => {
-              setMaxPrice(e.target.value);
-              setMinPrice("0");
+              const val = Number(e.target.value);
+              const min = Number(minPrice || 0);
+              if (val < min) {
+                 setMaxPrice(min.toString());
+              } else {
+                 setMaxPrice(val.toString());
+              }
             }}
-            style={{
-              background: `linear-gradient(to right, hsl(var(--accent)) ${((maxPrice !== "" ? Number(maxPrice) : 1000) / 1000) * 100}%, hsl(var(--secondary)) ${((maxPrice !== "" ? Number(maxPrice) : 1000) / 1000) * 100}%)`
-            }}
-            className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-accent"
+            className="absolute top-1/2 left-0 right-0 -translate-y-1/2 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-accent [&::-moz-range-thumb]:shadow-md cursor-pointer z-10"
           />
-          <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
-            <span>৳0</span>
-            <span>৳1000</span>
-          </div>
+        </div>
+        <div className="flex justify-between text-[10px] text-muted-foreground mt-1 font-medium">
+          <span>৳{minPrice || 0}</span>
+          <span>৳{maxPrice !== "" ? maxPrice : 1000}</span>
         </div>
       </div>
 
@@ -308,7 +342,7 @@ export default function ShopPage() {
 
   return (
     <>
-      <div className="bg-background min-h-screen">
+      <div className="bg-background min-h-screen pb-20">
       {/* Top Banner & Breadcrumb Header */}
       <div className="bg-secondary/40 border-b border-border/60 py-6 md:py-8 mb-6">
         <div className="container-shop">

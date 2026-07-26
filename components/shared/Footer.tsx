@@ -229,8 +229,8 @@ export function Footer() {
               `© ${new Date().getFullYear()} ${storeName}. All rights reserved.`}
           </p>
 
-          {/* Legal Links */}
-          <div className="flex items-center gap-6">
+          {/* Legal Links & Developer */}
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-4 md:gap-6">
             <Link
               href="/privacy"
               className="text-xs text-background/60 hover:text-background transition-colors"
@@ -243,6 +243,15 @@ export function Footer() {
             >
               Terms of Service
             </Link>
+            <div className="hidden md:block w-px h-3 bg-background/20"></div>
+            <a
+              href="https://softzeniqit.xyz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-background/60 hover:text-accent transition-colors"
+            >
+              Developed by <strong className="font-semibold text-background">Softzeniq IT</strong>
+            </a>
           </div>
         </div>
       </div>

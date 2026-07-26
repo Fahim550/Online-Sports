@@ -1,4 +1,5 @@
 "use client";
+import { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { Category, Product } from "@/hooks/useShopData";
@@ -20,6 +21,44 @@ export function ProductCard({ product }: ProductCardProps) {
   const router = useRouter();
   const { getProductRating } = useProductRatingStats();
   const { data: hideStockMap = {} } = useHideStockMap();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  // Auto-slide effect for multiple images
+  useEffect(() => {
+    if (product.images && product.images.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+      }, 3000); // Change image every 3 seconds
+      return () => clearInterval(interval);
+    }
+  }, [product.images]);
+
+  // Swipe handlers for mobile
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && product.images && product.images.length > 1) {
+      setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
+    } else if (isRightSwipe && product.images && product.images.length > 1) {
+      setCurrentImageIndex((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
+    }
+  };
 
   const ratingInfo = getProductRating(product.id);
   const ratingValue = ratingInfo.avgRating;
@@ -71,16 +110,37 @@ export function ProductCard({ product }: ProductCardProps) {
     <div className="group bg-card rounded-md border border-border/80 flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-foreground/5 p-2 justify-between">
       <div>
         {/* Image wrapper with padding */}
-        <div className="relative aspect-square overflow-hidden bg-secondary/50 rounded-sm">
-          <Link href={`/products/${product.slug}`} className="block w-full h-full">
-            <Image
-              src={product.images[0] || "/placeholder.svg"}
-              alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-              height={320}
-              width={320}
-              loading="lazy"
-            />
+        <div 
+          className="relative aspect-square overflow-hidden bg-secondary/50 rounded-sm"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <Link href={`/products/${product.slug}`} className="block w-full h-full relative">
+            {product.images && product.images.length > 0 ? (
+              product.images.map((img, idx) => (
+                <Image
+                  key={idx}
+                  src={img}
+                  alt={`${product.name} - image ${idx + 1}`}
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out group-hover:scale-105 ${
+                    idx === currentImageIndex ? "opacity-100 z-10" : "opacity-0 z-0"
+                  }`}
+                  height={320}
+                  width={320}
+                  loading={idx === 0 ? "lazy" : "lazy"}
+                />
+              ))
+            ) : (
+              <Image
+                src="/placeholder.svg"
+                alt={product.name}
+                className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                height={320}
+                width={320}
+                loading="lazy"
+              />
+            )}
           </Link>
 
           {/* Top Left Discount Badge (replacing the NEW badge position, aligned directly with corner) */}

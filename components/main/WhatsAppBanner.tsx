@@ -3,7 +3,7 @@
 import { useStoreSettings } from "@/hooks/useStoreSettings";
 import { MessageCircle } from "lucide-react";
 
-export function WhatsAppBanner() {
+export function WhatsAppBanner({ className }: { className?: string }) {
   const { data: storeSettings, isLoading } = useStoreSettings();
 
   // Show nothing while loading
@@ -13,7 +13,7 @@ export function WhatsAppBanner() {
   const title =
     storeSettings?.whatsapp_banner_title ||
     "Have questions? Chat with us on WhatsApp!";
-  const number = storeSettings?.whatsapp_number || "";
+  const number = storeSettings?.whatsapp_banner_number || storeSettings?.whatsapp_number || "";
 
   // Only hide if explicitly disabled
   if (!enabled) return null;
@@ -37,7 +37,7 @@ export function WhatsAppBanner() {
         fontSize: "0.875rem",
         borderRadius: 999,
         whiteSpace: "nowrap" as const,
-        boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
+        // boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
         flexShrink: 0,
         cursor: waUrl ? "pointer" : "default",
         opacity: waUrl ? 1 : 0.7,
@@ -50,7 +50,7 @@ export function WhatsAppBanner() {
   );
 
   return (
-    <div style={{ width: "100%", padding: "1.5rem 1rem" }}>
+    <div className={className !== undefined ? className : "w-full py-6 px-4"}>
       <div
         style={{
           display: "flex",
