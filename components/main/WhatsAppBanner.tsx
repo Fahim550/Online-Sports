@@ -52,9 +52,12 @@ export function WhatsAppBanner({ className }: { className?: string }) {
     "Have questions? Chat with us on WhatsApp!";
   const number =
     storeSettings?.whatsapp_banner_number || storeSettings?.whatsapp_number || "";
+  const autoMessage = storeSettings?.whatsapp_banner_message || "";
 
   const cleanNumber = number.replace(/[^0-9]/g, "");
-  const waUrl = cleanNumber ? `https://wa.me/${cleanNumber}` : undefined;
+  const waUrl = cleanNumber 
+    ? `https://wa.me/${cleanNumber}${autoMessage ? `?text=${encodeURIComponent(autoMessage)}` : ""}` 
+    : undefined;
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">

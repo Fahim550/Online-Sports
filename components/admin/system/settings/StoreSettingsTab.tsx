@@ -34,6 +34,7 @@ interface StoreData {
   whatsapp_banner_enabled: string;
   whatsapp_banner_title: string;
   whatsapp_banner_number: string;
+  whatsapp_banner_message: string;
   // Mobile Marquee
   mobile_marquee_enabled: string;
   mobile_marquee_text: string;
@@ -432,6 +433,22 @@ export function StoreSettingsTab({
             />
             <p className="text-xs text-muted-foreground mt-1">
               Banner এ এই WhatsApp number টি ব্যবহার হবে। Country code সহ লিখুন (যেমন: 8801...)
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              WhatsApp Auto Message
+            </label>
+            <textarea
+              value={storeData.whatsapp_banner_message}
+              onChange={(e) =>
+                setStoreData({ ...storeData, whatsapp_banner_message: e.target.value })
+              }
+              className="input-shop min-h-[80px] py-2"
+              placeholder="Hello! I have a question about your products."
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              WhatsApp-এ ক্লিক করলে এই মেসেজটি অটোমেটিক টাইপ হয়ে থাকবে।
             </p>
           </div>
         </div>
