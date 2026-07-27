@@ -95,11 +95,11 @@ export function Footer() {
             <Link href="/" className="inline-block">
               {storeSettings?.store_logo ? (
                 <Image
-                  src={storeSettings.store_logo}
+                  src={storeSettings?.store_logo}
                   alt={storeName}
                   height={48}
                   width={180}
-                  className="h-12 w-auto object-contain brightness-0 invert"
+                  className="h-12 w-auto object-contain rounded-xl"
                   priority
                 />
               ) : (

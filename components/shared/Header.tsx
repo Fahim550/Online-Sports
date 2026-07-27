@@ -1,22 +1,21 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
-import { useStoreSettings } from "@/hooks/useStoreSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useCategories } from "@/hooks/useShopData";
+import { useStoreSettings } from "@/hooks/useStoreSettings";
 import { useWishlist } from "@/hooks/useWishlist";
 import {
   ChevronDown,
   ChevronRight,
-  Flame,
   Heart,
   Home,
   LogOut,
@@ -26,9 +25,8 @@ import {
   Search,
   ShoppingBag,
   ShoppingBasket,
-  Sparkles,
   User,
-  X,
+  X
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -148,7 +146,7 @@ export function Header() {
                         {isSettingsLoading ? (
                           <div className="w-32 h-12 bg-muted/65 animate-pulse rounded-xl" />
                         ) : storeLogo ? (
-                          <Image src={storeLogo} alt={storeName} height={48} width={200} className="h-12 w-auto object-contain" />
+                          <Image src={storeLogo} alt={storeName} height={48} width={200} className="h-12 w-auto object-contain rounded-xl" />
                         ) : (
                           <span className="text-xl font-black tracking-tight text-foreground">{storeName}</span>
                         )}
@@ -308,7 +306,7 @@ export function Header() {
                       alt={storeName}
                       height={56}
                       width={200}
-                      className="h-10 sm:h-12 md:h-14 w-auto object-contain"
+                      className="h-10 sm:h-12 md:h-14 w-auto object-contain rounded-md"
                     />
                   </div>
                 ) : (
