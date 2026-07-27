@@ -47,7 +47,7 @@ export function AdminSidebar({ mobile, closeSidebar }: Props) {
         <h2 className="font-bold text-xl">STORE ADMIN</h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto scrollbar-none p-4">
         {sections.map((section) => {
           const items = sidebarItems.filter((i) => i.section === section);
           if (items.length === 0) return null;

@@ -583,17 +583,17 @@ export function Header() {
       <div
         className={`hidden md:block border-t border-border/35 bg-background select-none transition-all duration-300 ease-in-out ${isScrolled
           ? "max-h-0 opacity-0 overflow-hidden border-t-0 py-0"
-          : "max-h-12 opacity-100 py-1.5"
+          : "max-h-14 opacity-100 py-1.5"
           }`}
       >
-        <div className="container-shop flex items-center justify-start gap-1 flex-wrap">
+        <div className="container-shop flex items-center justify-start gap-1 flex-nowrap overflow-x-auto scrollbar-none">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`py-1.5 px-4 text-[15px] font-semibold transition-all duration-300 rounded-md flex items-center gap-1 shrink-0 ${isActive
+                className={`py-1.5 px-2.5 lg:px-4 text-xs lg:text-[14px] font-semibold transition-all duration-300 rounded-md flex items-center gap-1 shrink-0 ${isActive
                   ? "bg-accent text-accent-foreground font-bold shadow-2xs"
                   : "text-foreground hover:text-accent hover:bg-secondary/40"
                   }`}

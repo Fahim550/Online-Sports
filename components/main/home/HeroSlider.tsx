@@ -117,7 +117,7 @@ export function HeroSlider() {
     <section className="w-full p-3 md:px-0 md:pt-0 md:pb-6">
       {/* Slider Container */}
       <div 
-        className="relative overflow-hidden group w-full rounded-xl md:rounded-none h-[240px] sm:h-[380px] md:h-[520px] lg:h-[600px]"
+        className="relative overflow-hidden group w-full rounded-xl md:rounded-none aspect-[16/8] sm:aspect-[16/7] md:aspect-[16/7] xl:aspect-[16/9] xl:max-h-[700px]"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

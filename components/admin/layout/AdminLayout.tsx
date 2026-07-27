@@ -90,13 +90,13 @@ export function AdminLayout({ children }: Props) {
   }
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex min-h-screen bg-background">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:flex">
+      <div className="hidden lg:flex sticky top-0 h-screen shrink-0">
         <AdminSidebar />
       </div>
 
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0 min-h-screen">
         {/* Mobile Header */}
         <div className="lg:hidden sticky top-0 z-50">
           <div className="h-16 border-b bg-background flex items-center px-4">
@@ -118,7 +118,7 @@ export function AdminLayout({ children }: Props) {
 
         <AdminHeader />
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+        <main className="flex-1 p-4 md:p-6 lg:p-8">
           {children}
         </main>
       </div>
