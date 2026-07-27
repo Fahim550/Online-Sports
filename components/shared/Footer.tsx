@@ -108,7 +108,6 @@ export function Footer() {
                 </span>
               )}
             </Link>
-            <h1>hello</h1>
 
             <p className="text-xs md:text-sm text-background/70 leading-relaxed max-w-sm">
               {storeTagline}

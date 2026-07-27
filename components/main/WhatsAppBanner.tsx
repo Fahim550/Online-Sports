@@ -34,16 +34,6 @@ export function WhatsAppBanner({ className }: { className?: string }) {
     }
   }, [pathname, storeSettings?.whatsapp_banner_enabled]);
 
-  // Recurring popup every 20 seconds on any page
-  useEffect(() => {
-    if (storeSettings?.whatsapp_banner_enabled !== "true") return;
-
-    const interval = setInterval(() => {
-      setIsOpen(true);
-    }, 20000); // 20 seconds
-
-    return () => clearInterval(interval);
-  }, [storeSettings?.whatsapp_banner_enabled]);
 
   if (isLoading || !isOpen) return null;
 

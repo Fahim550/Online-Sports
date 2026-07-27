@@ -71,6 +71,7 @@ export default function AdminSettings() {
     whatsapp_banner_enabled: "false",
     whatsapp_banner_title: "",
     whatsapp_banner_number: "",
+    whatsapp_banner_message: "",
     mobile_marquee_enabled: "false",
     mobile_marquee_text: "",
   });
