@@ -1,7 +1,7 @@
 import { Providers } from "@/components/Providers";
 import { Layout } from "@/components/shared/Layout";
 import { createClient } from "@/utils/supabase/client";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 
@@ -17,46 +17,111 @@ const sora = Sora({
   weight: ["500", "600", "700", "800"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://suyeb-online-sports.vercel.app";
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf9f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#1a1a2e" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  colorScheme: "light dark",
+};
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://suyeb-online-sports.vercel.app"), // Replace with actual production domain when available
+  metadataBase: new URL(siteUrl),
   title: {
     template: "%s | Suyeb Online Sports",
-    default: "Suyeb Online Sports | Premium Sports Gear & Clothing",
+    default: "Suyeb Online Sports | Premium Sports Gear, Clothing & Accessories",
   },
   description:
-    "Find premium sports gear, clothing, and equipment at Suyeb Online Sports. Fast shipping and 100% genuine products.",
-  keywords: ["Sports Gear", "Sports Clothing", "Online Sports Shop", "Suyeb Sports", "Fitness Equipment", "Athletic Wear", "Bangladesh Sports Shop"],
-  authors: [{ name: "Suyeb Online Sports" }],
+    "Suyeb Online Sports is your ultimate online destination in Bangladesh for 100% authentic sports gear, custom jerseys, football kits, cricket equipment, athletic clothing, and fitness accessories. Fast nationwide shipping & best prices guaranteed.",
+  keywords: [
+    "Suyeb Online Sports",
+    "Suyeb Sports",
+    "Sports Shop Bangladesh",
+    "Online Sports Store BD",
+    "Custom Jersey Bangladesh",
+    "Football Jersey BD",
+    "Cricket Bats & Gear",
+    "Fitness Equipment Bangladesh",
+    "Athletic Wear BD",
+    "Gym Wear Bangladesh",
+    "Badminton Rackets BD",
+    "Sports Gear Shop",
+  ],
+  authors: [{ name: "Suyeb Online Sports", url: siteUrl }],
   creator: "SoftZeniq IT",
   publisher: "Suyeb Online Sports",
+  applicationName: "Suyeb Online Sports",
+  generator: "Next.js",
+  referrer: "origin-when-cross-origin",
+  category: "Sports & Recreation",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
+  alternates: {
+    canonical: "/",
+    languages: {
+      "en-US": "/",
+      "bn-BD": "/",
+    },
+  },
   openGraph: {
-    title: "Suyeb Online Sports | Premium Sports Gear",
-    description: "Your ultimate destination for authentic sports gear, apparel, and accessories.",
-    url: "/",
+    title: "Suyeb Online Sports | Premium Sports Gear & Clothing",
+    description:
+      "Shop genuine sports equipment, custom team jerseys, athletic wear, and fitness accessories at Suyeb Online Sports. Fast nationwide shipping in Bangladesh.",
+    url: siteUrl,
     siteName: "Suyeb Online Sports",
-    locale: "bn_BD",
+    locale: "en_US",
+    alternateLocale: ["bn_BD"],
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Suyeb Online Sports - Authentic Sports Gear & Clothing",
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Suyeb Online Sports | Premium Sports Gear",
-    description: "Your premium destination for authentic sports gear, apparel, and accessories.",
+    title: "Suyeb Online Sports | Premium Sports Gear & Apparel",
+    description:
+      "Discover authentic sports gear, custom jerseys, cricket bats, football accessories, and athletic wear at Suyeb Online Sports.",
+    creator: "@suyebsports",
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,
     follow: true,
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
+      noimageindex: false,
       "max-video-preview": -1,
       "max-image-preview": "large",
       "max-snippet": -1,
     },
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "",
   },
 };
 
@@ -197,6 +262,34 @@ export default async function RootLayout({
     }
   `;
 
+  const jsonLdStore = {
+    "@context": "https://schema.org",
+    "@type": "SportsGoodsStore",
+    "name": "Suyeb Online Sports",
+    "alternateName": ["Suyeb Sports", "Suyeb E-Com"],
+    "url": siteUrl,
+    "logo": `${siteUrl}/logo.png`,
+    "description":
+      "Suyeb Online Sports is Bangladesh's premier online destination for authentic sports gear, team jerseys, cricket equipment, football accessories, and athletic wear.",
+    "priceRange": "৳",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "BD",
+    },
+  };
+
+  const jsonLdWebSite = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Suyeb Online Sports",
+    "url": siteUrl,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": `${siteUrl}/shop?search={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <html
       lang="en"
@@ -220,6 +313,14 @@ export default async function RootLayout({
               } catch (e) {}
             `,
           }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdStore) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }}
         />
       </head>
       <body className="min-h-full flex flex-col">

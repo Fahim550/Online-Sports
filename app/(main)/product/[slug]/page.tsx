@@ -1,3 +1,2 @@
-import ProductDetailsPage from "../../products/[slug]/page";
+export { default, generateMetadata } from "../../products/[slug]/page";
 
-export default ProductDetailsPage;

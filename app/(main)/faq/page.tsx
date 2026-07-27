@@ -4,6 +4,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Frequently Asked Questions",
+  description: "Find answers to common questions about placing orders, shipping times, returns, payment options, and customer support at Suyeb Online Sports.",
+};
 
 const faqs = [
   {
@@ -39,7 +45,7 @@ const faqs = [
   {
     question: "How can I contact customer support?",
     answer:
-      "You can reach us via phone at +880 1234 567890, email at hello@store.com, or through our Contact page. Our support team is available Saturday through Thursday, 10am to 8pm.",
+      "You can reach us via phone, email, or through our Contact page. Our support team is available Saturday through Thursday, 10am to 8pm.",
   },
   {
     question: "Can I modify or cancel my order?",
@@ -49,8 +55,25 @@ const faqs = [
 ];
 
 export default function page() {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map((faq) => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer,
+      },
+    })),
+  };
+
   return (
     <div className="container-shop section-padding">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
