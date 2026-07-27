@@ -50,11 +50,12 @@ export interface StoreSettings {
   whatsapp_order_enabled: string;
   topbar_text: string;
   topbar_enabled: string;
-  // WhatsApp banner
+  // WhatsApp banner & button
   whatsapp_banner_enabled: string;
   whatsapp_banner_title: string;
   whatsapp_banner_number: string;
   whatsapp_banner_message: string;
+  whatsapp_float_enabled: string;
   // Legal pages
   privacy_title: string;
   privacy_content: string;
@@ -122,6 +123,7 @@ const DEFAULT_STORE_SETTINGS: StoreSettings = {
   whatsapp_banner_title: "Have questions? Chat with us on WhatsApp!",
   whatsapp_banner_number: "",
   whatsapp_banner_message: "Hello! I have a question about your products.",
+  whatsapp_float_enabled: "true",
   privacy_title: "Privacy Policy",
   privacy_content: "Your privacy policy content goes here.",
   terms_title: "Terms of Service",

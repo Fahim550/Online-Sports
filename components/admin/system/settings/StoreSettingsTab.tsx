@@ -30,11 +30,12 @@ interface StoreData {
   footer_text: string;
   topbar_text: string;
   topbar_enabled: string;
-  // WhatsApp Banner
+  // WhatsApp Banner & Floating Button
   whatsapp_banner_enabled: string;
   whatsapp_banner_title: string;
   whatsapp_banner_number: string;
   whatsapp_banner_message: string;
+  whatsapp_float_enabled: string;
   // Mobile Marquee
   mobile_marquee_enabled: string;
   mobile_marquee_text: string;
@@ -367,6 +368,26 @@ export function StoreSettingsTab({
                 setStoreData({
                   ...storeData,
                   whatsapp_order_enabled: checked ? "true" : "false",
+                })
+              }
+            />
+          </div>
+
+          <div className="md:col-span-2 flex items-center justify-between p-4 border border-border rounded-lg">
+            <div>
+              <label className="text-sm font-medium">
+                Floating WhatsApp Message Button (Right Bottom)
+              </label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                ওয়েবসাইটের নিচে ডান কোণায় ফ্লোটিং WhatsApp চ্যাট বাটন দেখাবে
+              </p>
+            </div>
+            <Switch
+              checked={storeData.whatsapp_float_enabled !== "false"}
+              onCheckedChange={(checked) =>
+                setStoreData({
+                  ...storeData,
+                  whatsapp_float_enabled: checked ? "true" : "false",
                 })
               }
             />

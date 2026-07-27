@@ -3,6 +3,7 @@ import { usePathname } from "next/navigation";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
 import { WhatsAppBanner } from "@/components/main/WhatsAppBanner";
+import { WhatsAppFloatingButton } from "@/components/main/WhatsAppFloatingButton";
 
 import { MobileMarquee } from "@/components/main/MobileMarquee";
 
@@ -25,6 +26,7 @@ export function Layout({ children }: LayoutProps) {
       {!isAdmin && <Header />}
       <main className="flex-1">{children}</main>
       {!isAdmin && showBanner && <WhatsAppBanner />}
+      {!isAdmin && <WhatsAppFloatingButton />}
       {!isAdmin && <Footer />}
       {!isAdmin && <MobileMarquee />}
     </div>
