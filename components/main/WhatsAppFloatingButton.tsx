@@ -14,12 +14,13 @@ export function WhatsAppFloatingButton() {
   if (isLoading || !isEnabled) return null;
 
   const number =
-    storeSettings?.whatsapp_banner_number || storeSettings?.whatsapp_number || "";
+    storeSettings?.whatsapp_number || storeSettings?.whatsapp_banner_number || "";
   const cleanNumber = number.replace(/[^0-9]/g, "");
 
   if (!cleanNumber) return null;
 
-  const autoMessage = storeSettings?.whatsapp_banner_message || "Hello! I have a query.";
+  const defaultMsg = "আসসালামু আলাইকুম! আমি কাস্টম জার্সি তৈরি করতে চাই। বিস্তারিত ও প্রাইস জানাবেন প্লিজ।";
+  const autoMessage = defaultMsg;
   const waUrl = `https://wa.me/${cleanNumber}${autoMessage ? `?text=${encodeURIComponent(autoMessage)}` : ""}`;
 
   return (

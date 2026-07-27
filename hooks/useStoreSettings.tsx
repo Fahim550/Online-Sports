@@ -122,7 +122,7 @@ const DEFAULT_STORE_SETTINGS: StoreSettings = {
   whatsapp_banner_enabled: "false",
   whatsapp_banner_title: "Have questions? Chat with us on WhatsApp!",
   whatsapp_banner_number: "",
-  whatsapp_banner_message: "Hello! I have a question about your products.",
+  whatsapp_banner_message: "আসসালামু আলাইকুম! আমি কাস্টম জার্সি তৈরি করতে চাই। বিস্তারিত ও প্রাইস জানাবেন প্লিজ।",
   whatsapp_float_enabled: "true",
   privacy_title: "Privacy Policy",
   privacy_content: "Your privacy policy content goes here.",
