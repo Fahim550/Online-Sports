@@ -1,11 +1,12 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { Footer } from "./Footer";
+import dynamic from "next/dynamic";
 import { Header } from "./Header";
-import { WhatsAppBanner } from "@/components/main/WhatsAppBanner";
-import { WhatsAppFloatingButton } from "@/components/main/WhatsAppFloatingButton";
 
-import { MobileMarquee } from "@/components/main/MobileMarquee";
+const Footer = dynamic(() => import("./Footer").then((m) => m.Footer));
+const WhatsAppBanner = dynamic(() => import("@/components/main/WhatsAppBanner").then((m) => m.WhatsAppBanner));
+const WhatsAppFloatingButton = dynamic(() => import("@/components/main/WhatsAppFloatingButton").then((m) => m.WhatsAppFloatingButton));
+const MobileMarquee = dynamic(() => import("@/components/main/MobileMarquee").then((m) => m.MobileMarquee));
 
 interface LayoutProps {
   children: React.ReactNode;

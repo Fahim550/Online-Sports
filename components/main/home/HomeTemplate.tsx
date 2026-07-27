@@ -1,19 +1,21 @@
 "use client";
-import { BestSellers } from "@/components/main/home/BestSellers";
-import { CustomerReviews } from "@/components/main/home/CustomerReviews";
+import React from "react";
+import dynamic from "next/dynamic";
 import { FeaturedCategories } from "@/components/main/home/FeaturedCategories";
-import { FeaturedProducts } from "@/components/main/home/FeaturedProducts";
 import { HeroSlider } from "@/components/main/home/HeroSlider";
-import { PromoBanners } from "@/components/main/home/PromoBanners";
-import { PromoOffers } from "@/components/main/home/PromoOffers";
-import { TrustBadges } from "@/components/main/home/TrustBadges";
 import { ProductCard } from "@/components/main/products/ProductCard";
 import { HomepageSection } from "@/hooks/useHomePageTemplates";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { SliderSlide, useNewArrivals } from "@/hooks/useShopData";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import React from "react";
+
+const BestSellers = dynamic(() => import("@/components/main/home/BestSellers").then((m) => m.BestSellers));
+const CustomerReviews = dynamic(() => import("@/components/main/home/CustomerReviews").then((m) => m.CustomerReviews));
+const FeaturedProducts = dynamic(() => import("@/components/main/home/FeaturedProducts").then((m) => m.FeaturedProducts));
+const PromoBanners = dynamic(() => import("@/components/main/home/PromoBanners").then((m) => m.PromoBanners));
+const PromoOffers = dynamic(() => import("@/components/main/home/PromoOffers").then((m) => m.PromoOffers));
+const TrustBadges = dynamic(() => import("@/components/main/home/TrustBadges").then((m) => m.TrustBadges));
 
 function NewArrivalsSection({ section }: { section: HomepageSection }) {
   const { data: newArrivals = [] } = useNewArrivals();
