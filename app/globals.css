@@ -788,3 +788,26 @@ body {
 .animate-marquee { 
   animation: marquee 20s linear infinite; 
 }
+
+/* Ensure all buttons and interactive elements have pointer cursor */
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-accent,
+.btn-outline,
+.btn-ghost,
+.btn-shop,
+summary {
+  cursor: pointer !important;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"],
+input:disabled {
+  cursor: not-allowed !important;
+}
