@@ -289,7 +289,8 @@ export const useFeaturedProducts = () => {
         .from("products")
         .select("*, category:categories(*), product_variants(count)")
         .eq("is_featured", true)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(12);
 
       if (error) throw error;
       return (data || []).map((p: any) => ({
@@ -299,6 +300,8 @@ export const useFeaturedProducts = () => {
           p.is_variable && (p.product_variants?.[0]?.count || 0) > 0,
       })) as (Product & { category: Category | null })[];
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 };
 
@@ -331,7 +334,8 @@ export const useBestSellers = () => {
         .from("products")
         .select("*, category:categories(*), product_variants(count)")
         .eq("is_best_seller", true)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(12);
 
       if (error) throw error;
       return (data || []).map((p: any) => ({
@@ -341,6 +345,8 @@ export const useBestSellers = () => {
           p.is_variable && (p.product_variants?.[0]?.count || 0) > 0,
       })) as (Product & { category: Category | null })[];
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 };
 
@@ -352,7 +358,8 @@ export const useNewArrivals = () => {
         .from("products")
         .select("*, category:categories(*), product_variants(count)")
         .eq("is_new", true)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(12);
 
       if (error) throw error;
       return (data || []).map((p: any) => ({
@@ -362,6 +369,8 @@ export const useNewArrivals = () => {
           p.is_variable && (p.product_variants?.[0]?.count || 0) > 0,
       })) as (Product & { category: Category | null })[];
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 };
 
@@ -437,6 +446,8 @@ export const useCategories = () => {
       if (error) throw error;
       return data as Category[];
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 };
 
@@ -458,7 +469,7 @@ export const useCategory = (slug: string) => {
 };
 
 // Slider
-export const useSliderSlides = (activeOnly = true) => {
+export const useSliderSlides = (activeOnly = true, initialData?: SliderSlide[]) => {
   return useQuery({
     queryKey: ["slider_slides", activeOnly],
     queryFn: async () => {
@@ -473,6 +484,9 @@ export const useSliderSlides = (activeOnly = true) => {
       if (error) throw error;
       return data as SliderSlide[];
     },
+    initialData,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 };
 

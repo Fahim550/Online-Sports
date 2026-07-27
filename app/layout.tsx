@@ -1,7 +1,8 @@
 import { Providers } from "@/components/Providers";
 import { Layout } from "@/components/shared/Layout";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/server";
 import type { Metadata, Viewport } from "next";
+import { unstable_cache } from "next/cache";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 
@@ -189,6 +190,22 @@ const defaultSettings = {
   brand_radius: "0.5",
 };
 
+// Cache site settings at the Next.js data cache layer for 60 seconds.
+// This prevents hitting Supabase on every SSR render across all requests.
+const getCachedSiteSettings = unstable_cache(
+  async () => {
+    const supabase = createClient();
+    const { data: settings } = await supabase
+      .from("site_settings")
+      .select("*")
+      .eq("id", "global")
+      .maybeSingle();
+    return settings;
+  },
+  ["site_settings_global"],
+  { revalidate: 60, tags: ["site_settings"] },
+);
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -197,12 +214,7 @@ export default async function RootLayout({
   let activeSettings = defaultSettings;
 
   try {
-    const supabase = createClient();
-    const { data: settings } = await supabase
-      .from("site_settings")
-      .select("*")
-      .eq("id", "global")
-      .maybeSingle();
+    const settings = await getCachedSiteSettings();
 
     if (settings) {
       activeSettings = {

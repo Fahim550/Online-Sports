@@ -1,6 +1,8 @@
 import HomeTemplate from "@/components/main/home/Home";
 
-export const dynamic = "force-dynamic";
+// ISR: Serve cached page for 60s, rebuild in background on next request.
+// This replaces force-dynamic which was disabling all caching.
+export const revalidate = 60;
 
 export default function Home() {
   const sections = [

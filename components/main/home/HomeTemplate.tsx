@@ -11,20 +11,9 @@ import { PromoOffers } from "@/components/main/home/PromoOffers";
 import { ProductCard } from "@/components/main/products/ProductCard";
 import { HomepageSection } from "@/hooks/useHomePageTemplates";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import { useNewArrivals } from "@/hooks/useShopData";
+import { useNewArrivals, SliderSlide } from "@/hooks/useShopData";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-
-const SECTION_COMPONENTS: Record<
-  string,
-  React.ComponentType<{ section: HomepageSection }>
-> = {
-  hero_slider: () => <HeroSlider />,
-  featured_categories: () => <FeaturedCategories />,
-  featured_products: () => <FeaturedProducts />,
-  best_sellers: () => <BestSellers />,
-  customer_reviews: () => <CustomerReviews />,
-};
 
 function NewArrivalsSection({ section }: { section: HomepageSection }) {
   const { data: newArrivals = [] } = useNewArrivals();
@@ -73,7 +62,24 @@ function NewArrivalsSection({ section }: { section: HomepageSection }) {
   );
 }
 
-export function DefaultHomepage({ sections }: { sections: HomepageSection[] }) {
+export function DefaultHomepage({
+  sections,
+  initialSlides,
+}: {
+  sections: HomepageSection[];
+  initialSlides?: SliderSlide[];
+}) {
+  const SECTION_COMPONENTS: Record<
+    string,
+    React.ComponentType<{ section: HomepageSection }>
+  > = {
+    hero_slider: () => <HeroSlider initialSlides={initialSlides} />,
+    featured_categories: () => <FeaturedCategories />,
+    featured_products: () => <FeaturedProducts />,
+    best_sellers: () => <BestSellers />,
+    customer_reviews: () => <CustomerReviews />,
+  };
+
   // Only allow specified sections and prevent duplicates
   const seen = new Set<string>();
   const allowedSections = sections.filter((section) => {

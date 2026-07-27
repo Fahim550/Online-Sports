@@ -21,7 +21,7 @@ export function FacebookPixelProvider({
   const initializedRef = useRef(false);
   const lastPathRef = useRef<string>("");
 
-  // Initialize pixel when settings are loaded
+  // Initialize pixel when settings are loaded (deferred after idle to avoid blocking TBT)
   useEffect(() => {
     if (initializedRef.current) return;
 
@@ -34,20 +34,31 @@ export function FacebookPixelProvider({
     // Check consent if required
     if (settings.cookie_consent_enabled && !hasConsent()) return;
 
-    try {
-      const success = initFacebookPixel(
-        settings.fb_pixel_id,
-        settings.fb_pixel_test_event_code,
-        settings.fb_capi_enabled || false,
-      );
+    const init = () => {
+      try {
+        const success = initFacebookPixel(
+          settings.fb_pixel_id!,
+          settings.fb_pixel_test_event_code,
+          settings.fb_capi_enabled || false,
+        );
 
-      if (success) {
-        initializedRef.current = true;
-        trackPageView();
-        lastPathRef.current = pathname;
+        if (success) {
+          initializedRef.current = true;
+          trackPageView();
+          lastPathRef.current = pathname;
+        }
+      } catch (error) {
+        console.warn("[FB Pixel Provider] Init error:", error);
       }
-    } catch (error) {
-      console.warn("[FB Pixel Provider] Init error:", error);
+    };
+
+    // Defer initialization to idle callback or delayed timer so third-party JS doesn't block main thread
+    if ("requestIdleCallback" in window) {
+      const handle = window.requestIdleCallback(init, { timeout: 3000 });
+      return () => window.cancelIdleCallback(handle);
+    } else {
+      const timer = setTimeout(init, 2000);
+      return () => clearTimeout(timer);
     }
   }, [settings, pathname]);
 

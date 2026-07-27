@@ -25,15 +25,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
-  // Auto-slide effect for multiple images
-  useEffect(() => {
-    if (product.images && product.images.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
-      }, 3000); // Change image every 3 seconds
-      return () => clearInterval(interval);
-    }
-  }, [product.images]);
+  const [isHovered, setIsHovered] = useState(false);
 
   // Swipe handlers for mobile
   const minSwipeDistance = 50;
@@ -107,8 +99,15 @@ export function ProductCard({ product }: ProductCardProps) {
     });
   };
 
+  const mainImage = product.images?.[currentImageIndex] || product.images?.[0] || "/placeholder.svg";
+  const hoverImage = product.images?.[1] && isHovered ? product.images[1] : null;
+
   return (
-    <div className="group bg-card rounded-md border border-border/80 flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-foreground/5 p-2 justify-between">
+    <div 
+      className="group bg-card rounded-md border border-border/80 flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-foreground/5 p-2 justify-between"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div>
         {/* Image wrapper with padding */}
         <div 
@@ -118,36 +117,15 @@ export function ProductCard({ product }: ProductCardProps) {
           onTouchEnd={handleTouchEnd}
         >
           <Link href={`/products/${product.slug}`} className="block w-full h-full relative overflow-hidden">
-            <div 
-              className="flex w-full h-full transition-transform duration-500 ease-out" 
-              style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
-            >
-              {product.images && product.images.length > 0 ? (
-                product.images.map((img, idx) => (
-                  <div key={idx} className="w-full h-full flex-shrink-0 relative">
-                    <Image
-                      src={img}
-                      alt={`${product.name} - image ${idx + 1}`}
-                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                      height={320}
-                      width={320}
-                      loading={idx === 0 ? "lazy" : "lazy"}
-                    />
-                  </div>
-                ))
-              ) : (
-                <div className="w-full h-full flex-shrink-0 relative">
-                  <Image
-                    src="/placeholder.svg"
-                    alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                    height={320}
-                    width={320}
-                    loading="lazy"
-                  />
-                </div>
-              )}
-            </div>
+            <Image
+              src={hoverImage || mainImage}
+              alt={product.name}
+              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+              height={320}
+              width={320}
+              loading="lazy"
+              sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 20vw"
+            />
           </Link>
 
           {/* Top Left Discount Badge (replacing the NEW badge position, aligned directly with corner) */}

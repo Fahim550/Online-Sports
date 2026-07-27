@@ -8,10 +8,13 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import arTranslations from "../il8n/translations/ar.json";
-import bnTranslations from "../il8n/translations/bn.json";
 import enTranslations from "../il8n/translations/en.json";
-import hiTranslations from "../il8n/translations/hi.json";
+
+type TranslationsType = typeof enTranslations;
+
+const loadedTranslations: Record<string, TranslationsType> = {
+  en: enTranslations,
+};
 
 // Helper function to convert hex color to HSL string
 function hexToHSL(hex: string): string {
@@ -67,7 +70,7 @@ export interface SiteSettings {
   currency_code: string;
   currency_symbol: string;
   currency_locale: string;
-  language: "en" | "hi" | "bn";
+  language: "en" | "hi" | "bn" | "ar";
   updated_at: string;
   // Facebook Pixel fields
   fb_pixel_enabled: boolean;
@@ -95,14 +98,7 @@ export interface SiteSettings {
   show_stock_to_visitors: boolean;
 }
 
-type TranslationsType = typeof enTranslations;
 
-const translations: Record<string, TranslationsType> = {
-  en: enTranslations,
-  hi: hiTranslations,
-  bn: bnTranslations,
-  ar: arTranslations,
-};
 
 const defaultSettings: SiteSettings = {
   id: "global",
@@ -142,7 +138,7 @@ interface SiteSettingsContextType {
   formatCurrency: (amount: number) => string;
   userLanguagePreference: string | null;
   setUserLanguagePreference: (lang: string | null) => void;
-  activeLanguage: "en" | "hi" | "bn";
+  activeLanguage: "en" | "hi" | "bn" | "ar";
   refetch: () => void;
 }
 
@@ -355,20 +351,43 @@ export const SiteSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // User preference overrides global setting
   const activeLanguage =
-    (userLanguagePreference as "en" | "hi" | "bn") || activeSettings.language;
+    (userLanguagePreference as "en" | "hi" | "bn" | "ar") || activeSettings.language;
+
+  const [, setLangLoaded] = useState(0);
+
+  useEffect(() => {
+    if (activeLanguage !== "en" && !loadedTranslations[activeLanguage]) {
+      const loadLang = async () => {
+        try {
+          let mod;
+          if (activeLanguage === "bn") mod = await import("../il8n/translations/bn.json");
+          else if (activeLanguage === "hi") mod = await import("../il8n/translations/hi.json");
+          else if (activeLanguage === "ar") mod = await import("../il8n/translations/ar.json");
+
+          if (mod?.default) {
+            loadedTranslations[activeLanguage] = mod.default as unknown as TranslationsType;
+            setLangLoaded((v) => v + 1);
+          }
+        } catch {
+          // Fallback to English on load error
+        }
+      };
+      loadLang();
+    }
+  }, [activeLanguage]);
 
   // Translation function
   const t = useCallback(
     (key: string): string => {
       const keys = key.split(".");
-      let value: unknown = translations[activeLanguage] || translations.en;
+      let value: unknown = loadedTranslations[activeLanguage] || loadedTranslations.en;
 
       for (const k of keys) {
         if (value && typeof value === "object" && k in value) {
           value = (value as Record<string, unknown>)[k];
         } else {
           // Fallback to English
-          value = translations.en;
+          value = loadedTranslations.en;
           for (const fallbackKey of keys) {
             if (value && typeof value === "object" && fallbackKey in value) {
               value = (value as Record<string, unknown>)[fallbackKey];

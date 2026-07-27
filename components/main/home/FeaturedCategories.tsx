@@ -102,6 +102,7 @@ export function FeaturedCategories() {
                   src={category.image}
                   alt={category.name}
                   fill
+                  loading="lazy"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 768px) 96px, 128px"
                 />
@@ -145,6 +146,7 @@ function ScrollingRow({ items }: { items: any[] }) {
               src={category.image}
               alt={category.name}
               fill
+              loading="lazy"
               draggable={false}
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               sizes="96px"

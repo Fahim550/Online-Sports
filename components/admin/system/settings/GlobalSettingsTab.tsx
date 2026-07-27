@@ -34,7 +34,7 @@ interface GlobalFormData {
   currencyCode: string;
   currencySymbol: string;
   currencyLocale: string;
-  language: "en" | "hi" | "bn";
+  language: "en" | "hi" | "bn" | "ar";
   show_stock_to_visitors: boolean;
 }
 

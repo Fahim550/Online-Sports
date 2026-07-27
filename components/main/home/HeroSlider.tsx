@@ -7,7 +7,9 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useCallback, useEffect, useState } from "react";
 
-export function HeroSlider() {
+import { SliderSlide } from "@/hooks/useShopData";
+
+export function HeroSlider({ initialSlides }: { initialSlides?: SliderSlide[] }) {
   const {
     data: slides = [],
     isLoading,
@@ -15,7 +17,7 @@ export function HeroSlider() {
     isError,
     error,
     refetch,
-  } = useSliderSlides();
+  } = useSliderSlides(true, initialSlides);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isStuck, setIsStuck] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -90,14 +92,16 @@ export function HeroSlider() {
 
   if (isLoading || isFetching) {
     return (
-      <section className="relative overflow-hidden bg-secondary h-[240px] sm:h-[380px] md:h-[520px] lg:h-[600px] w-full rounded-none">
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
-          {isStuck && (
-            <Button className="btn-accent" onClick={() => refetch()}>
-              Loading too long — Retry
-            </Button>
-          )}
+      <section className="w-full p-3 md:px-0 md:pt-0 md:pb-6">
+        <div className="relative overflow-hidden w-full rounded-xl md:rounded-none aspect-[16/8] sm:aspect-[16/7] md:aspect-[16/7] xl:aspect-[16/9] xl:max-h-[700px] bg-secondary animate-pulse">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
+            {isStuck && (
+              <Button className="btn-accent" onClick={() => refetch()}>
+                Loading too long — Retry
+              </Button>
+            )}
+          </div>
         </div>
       </section>
     );
@@ -144,6 +148,7 @@ export function HeroSlider() {
                     alt={slide.heading || "Hero Banner"}
                     fill
                     priority={index === 0}
+                    fetchPriority={index === 0 ? "high" : "low"}
                     className={`w-full h-full object-cover transition-transform duration-[8000ms] ease-out ${isActive ? "scale-100" : "scale-105"
                       }`}
                     sizes="(max-width: 768px) 100vw, 90vw"
@@ -160,6 +165,7 @@ export function HeroSlider() {
                     alt={slide.heading || "Hero Banner"}
                     fill
                     priority={index === 0}
+                    fetchPriority={index === 0 ? "high" : "low"}
                     className={`w-full h-full object-cover transition-transform duration-[8000ms] ease-out ${isActive ? "scale-100" : "scale-105"
                       }`}
                     sizes="(max-width: 768px) 100vw, 90vw"
