@@ -93,6 +93,7 @@ export function PromoOffers() {
                     src={card.image}
                     alt={card.title}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover w-full h-full transition-transform duration-500 ease-out group-hover:scale-105"
                   />
                   {/* Gradient Overlay for text contrast (darker on left) */}

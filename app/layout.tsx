@@ -305,8 +305,9 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable}  ${sora.variable} h-full antialiased`}
+      className={`${inter.variable} ${sora.variable} h-full antialiased`}
       data-scroll-behavior="smooth"
+      suppressHydrationWarning
     >
       <head>
         <style dangerouslySetInnerHTML={{ __html: cssVariables }} />

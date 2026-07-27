@@ -101,39 +101,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(newSession?.user ?? null);
 
       if (newSession?.user) {
-        setTimeout(async () => {
-          await checkRoles(newSession.user.id);
-          finishLoading();
-        }, 0);
+        await checkRoles(newSession.user.id);
       } else {
         setIsAdmin(false);
         setIsStaff(false);
         setUserRole(null);
-        finishLoading();
       }
+      finishLoading();
     });
-
-    supabase.auth
-      .getSession()
-      .then(async ({ data: { session: currentSession }, error }) => {
-        if (error) {
-          setAuthError(error.message);
-          finishLoading();
-          return;
-        }
-
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-
-        if (currentSession?.user) {
-          await checkRoles(currentSession.user.id);
-        }
-        finishLoading();
-      })
-      .catch(() => {
-        setAuthError("Failed to initialize auth");
-        finishLoading();
-      });
 
     return () => {
       subscription.unsubscribe();

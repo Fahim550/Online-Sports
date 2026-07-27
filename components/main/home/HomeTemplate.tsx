@@ -1,19 +1,19 @@
 "use client";
-import React from "react";
 import { BestSellers } from "@/components/main/home/BestSellers";
+import { CustomerReviews } from "@/components/main/home/CustomerReviews";
 import { FeaturedCategories } from "@/components/main/home/FeaturedCategories";
 import { FeaturedProducts } from "@/components/main/home/FeaturedProducts";
 import { HeroSlider } from "@/components/main/home/HeroSlider";
-import { CustomerReviews } from "@/components/main/home/CustomerReviews";
-import { TrustBadges } from "@/components/main/home/TrustBadges";
 import { PromoBanners } from "@/components/main/home/PromoBanners";
 import { PromoOffers } from "@/components/main/home/PromoOffers";
+import { TrustBadges } from "@/components/main/home/TrustBadges";
 import { ProductCard } from "@/components/main/products/ProductCard";
 import { HomepageSection } from "@/hooks/useHomePageTemplates";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import { useNewArrivals, SliderSlide } from "@/hooks/useShopData";
+import { SliderSlide, useNewArrivals } from "@/hooks/useShopData";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import React from "react";
 
 function NewArrivalsSection({ section }: { section: HomepageSection }) {
   const { data: newArrivals = [] } = useNewArrivals();

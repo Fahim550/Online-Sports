@@ -31,7 +31,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export function Header() {
   const { totalItems } = useCart();
@@ -59,44 +59,47 @@ export function Header() {
   const storeLogo = storeSettings?.store_logo || "";
   const whatsappNumber = storeSettings?.whatsapp_number || "";
 
-  const headerCategoriesString = storeSettings?.header_categories || "";
-  const headerCategoriesSlugs = headerCategoriesString
-    ? headerCategoriesString.split(",").map((s: string) => s.trim()).filter(Boolean)
-    : [];
+  const activeCategories = useMemo(() => {
+    const headerCategoriesString = storeSettings?.header_categories || "";
+    const headerCategoriesSlugs = headerCategoriesString
+      ? headerCategoriesString.split(",").map((s: string) => s.trim()).filter(Boolean)
+      : [];
 
-  const activeCategories = categories
-    .filter((cat: any) => cat.is_active !== false)
-    .filter((cat: any) => {
-      // If the dashboard has configured categories, only show those.
-      // Otherwise, fallback to showing all active categories.
-      if (headerCategoriesSlugs.length > 0) {
-        return headerCategoriesSlugs.includes(cat.slug);
-      }
-      return true;
-    })
-    .sort((a: any, b: any) => {
-      if (headerCategoriesSlugs.length > 0) {
-        const indexA = headerCategoriesSlugs.indexOf(a.slug);
-        const indexB = headerCategoriesSlugs.indexOf(b.slug);
-        return indexA - indexB;
-      }
-      return 0;
-    })
-    .map((cat: any) => ({
-      id: cat.id,
-      name: cat.name,
-      slug: cat.slug,
-      image: cat.image,
-      href: `/shop?category=${cat.slug}`,
-    }))
-    .slice(0, 8);
+    return categories
+      .filter((cat: any) => cat.is_active !== false)
+      .filter((cat: any) => {
+        if (headerCategoriesSlugs.length > 0) {
+          return headerCategoriesSlugs.includes(cat.slug);
+        }
+        return true;
+      })
+      .sort((a: any, b: any) => {
+        if (headerCategoriesSlugs.length > 0) {
+          const indexA = headerCategoriesSlugs.indexOf(a.slug);
+          const indexB = headerCategoriesSlugs.indexOf(b.slug);
+          return indexA - indexB;
+        }
+        return 0;
+      })
+      .map((cat: any) => ({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+        image: cat.image,
+        href: `/shop?category=${cat.slug}`,
+      }))
+      .slice(0, 8);
+  }, [categories, storeSettings?.header_categories]);
 
-  const navigation = [
-    { name: "HOME", href: "/" },
-    { name: "Shop", href: "/shop" },
-    ...activeCategories,
-    { name: "Track Order", href: "/track-order" },
-  ];
+  const navigation = useMemo(
+    () => [
+      { name: "HOME", href: "/" },
+      { name: "Shop", href: "/shop" },
+      ...activeCategories,
+      { name: "Track Order", href: "/track-order" },
+    ],
+    [activeCategories],
+  );
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,7 +149,14 @@ export function Header() {
                         {isSettingsLoading ? (
                           <div className="w-32 h-12 bg-muted/65 animate-pulse rounded-xl" />
                         ) : storeLogo ? (
-                          <Image src={storeLogo} alt={storeName} height={48} width={200} className="h-12 w-auto object-contain rounded-xl" />
+                          <Image
+                            src={storeLogo}
+                            alt={storeName}
+                            height={48}
+                            width={200}
+                            style={{ width: "auto" }}
+                            className="h-12 w-auto object-contain rounded-xl"
+                          />
                         ) : (
                           <span className="text-xl font-black tracking-tight text-foreground">{storeName}</span>
                         )}
@@ -306,6 +316,7 @@ export function Header() {
                       alt={storeName}
                       height={56}
                       width={200}
+                      style={{ width: "auto" }}
                       className="h-10 sm:h-12 md:h-14 w-auto object-contain rounded-md"
                     />
                   </div>
