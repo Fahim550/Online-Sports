@@ -73,7 +73,7 @@ export default function AdminSettings() {
     whatsapp_banner_number: "",
     whatsapp_banner_message: "",
     whatsapp_float_enabled: "true",
-    mobile_marquee_enabled: "false",
+    mobile_marquee_enabled: "true",
     mobile_marquee_text: "",
   });
 

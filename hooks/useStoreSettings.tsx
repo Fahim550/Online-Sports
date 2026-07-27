@@ -129,8 +129,8 @@ const DEFAULT_STORE_SETTINGS: StoreSettings = {
   terms_title: "Terms of Service",
   terms_content: "Your terms of service content goes here.",
   header_categories: "",
-  mobile_marquee_enabled: "false",
-  mobile_marquee_text: "Welcome to our store! Enjoy free shipping on orders over 1000 Taka.",
+  mobile_marquee_enabled: "true",
+  mobile_marquee_text: "Welcome to our store! Enjoy free shipping on orders over 1000 Taka. | Order Your Favourite Club Jersey | Custom Jersey & Sports Equipment Available",
 };
 
 export const STORE_SETTINGS_QUERY_KEY = ["store-settings"];
