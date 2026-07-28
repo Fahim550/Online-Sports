@@ -28,7 +28,7 @@ export function MobileMarquee() {
       <div className="h-[44px] w-full flex-shrink-0" />
 
       {/* Fixed Bottom Marquee Bar */}
-      <div className="fixed bottom-0 left-0 w-full bg-[#1a1a2e] text-white py-2.5 overflow-hidden border-t border-white/10 z-[150] shadow-lg">
+      <div className="fixed bottom-0 left-0 w-full bg-[#1a1a2e] text-white py-2.5 overflow-hidden border-t border-white/10 z-40 shadow-lg">
         <div className="w-full relative flex items-center whitespace-nowrap overflow-hidden">
           {/* Continuous scrolling text container */}
           <div className="animate-marquee inline-flex items-center text-[14px] font-semibold tracking-wide">

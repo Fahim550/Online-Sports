@@ -1,6 +1,6 @@
 "use client";
-import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 import { Header } from "./Header";
 
 const Footer = dynamic(() => import("./Footer").then((m) => m.Footer));
