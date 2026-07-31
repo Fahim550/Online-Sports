@@ -2,8 +2,9 @@
 
 import { ProductVariant } from "@/hooks/useVariants";
 import { cn } from "@/lib/utils";
-import { Check, Ruler, Edit2 } from "lucide-react";
+import { Check, Ruler, Edit2, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
+import { FabricPricingGuide } from "./FabricPricingGuide";
 
 interface VariantSelectorProps {
   variants: ProductVariant[];
@@ -52,6 +53,31 @@ export function VariantSelector({
 }: VariantSelectorProps) {
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [showSizeSelector, setShowSizeSelector] = useState(false);
+  const [showPricingGuide, setShowPricingGuide] = useState(false);
+
+  // Local state for split fabric/sleeve selection
+  const [localFabric, setLocalFabric] = useState<string | null>(null);
+  const [localSleeve, setLocalSleeve] = useState<"Short Sleeve" | "Long Sleeve">("Short Sleeve");
+
+  // Sync local state when selectedFabric prop changes (e.g., from outside)
+  useEffect(() => {
+    if (selectedFabric) {
+      const match = selectedFabric.match(/^(.*?)\s*\((Short Sleeve|Long Sleeve)\)$/);
+      if (match) {
+        setLocalFabric(match[1].trim());
+        setLocalSleeve(match[2] as any);
+      } else {
+        setLocalFabric(selectedFabric);
+      }
+    }
+  }, [selectedFabric]);
+
+  // Handle local changes and push to parent
+  const handleLocalChange = (fabric: string | null, sleeve: "Short Sleeve" | "Long Sleeve") => {
+    if (fabric && onFabricSelect) {
+      onFabricSelect(`${fabric} (${sleeve})`);
+    }
+  };
 
   // Extract unique sizes
   const sizes = [
@@ -177,35 +203,70 @@ export function VariantSelector({
     <div className="space-y-5">
       {/* Fabric Selector */}
       {fabricOptions && fabricOptions.length > 0 && onFabricSelect && (
-        <div className="space-y-2.5">
-          <label className="text-xs font-extrabold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-            <span>Fabric (ফ্যাব্রিক):</span>
-            {selectedFabric && (
-              <span className="text-accent font-extrabold normal-case bg-accent/10 px-2 py-0.5 rounded-md text-xs">
-                {selectedFabric}
-              </span>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-extrabold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+              <span>Fabric Type (ফ্যাব্রিক):</span>
+            </label>
+
+            <button
+              type="button"
+              onClick={() => setShowPricingGuide(true)}
+              className="text-xs font-semibold text-accent hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <Tag className="h-3.5 w-3.5" />
+              <span>Pricing Guide</span>
+            </button>
+          </div>
+
+          <div className="grid gap-3">
+            <div className="relative">
+              <select
+                className="w-full h-11 px-3 border border-border/60 rounded-xl text-sm font-semibold bg-card text-foreground cursor-pointer outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all appearance-none pr-10"
+                value={localFabric || ""}
+                onChange={(e) => {
+                  setLocalFabric(e.target.value);
+                  handleLocalChange(e.target.value, localSleeve);
+                }}
+              >
+                <option value="" disabled>Select Fabric</option>
+                {fabricOptions.map((fabric) => (
+                  <option key={fabric.id} value={fabric.name}>
+                    {fabric.name}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+
+            {localFabric && (
+              <div className="flex gap-2">
+                {(["Short Sleeve", "Long Sleeve"] as const).map((sleeve) => {
+                  const isSelected = localSleeve === sleeve;
+                  return (
+                    <button
+                      key={sleeve}
+                      type="button"
+                      onClick={() => {
+                        setLocalSleeve(sleeve);
+                        handleLocalChange(localFabric, sleeve);
+                      }}
+                      className={cn(
+                        "flex-1 h-10 px-4 rounded-xl border text-xs font-extrabold transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 select-none",
+                        isSelected
+                          ? "border-accent bg-accent/10 text-accent ring-1 ring-accent/40 shadow-2xs scale-105"
+                          : "border-border/50 bg-card text-foreground hover:border-accent/40 hover:bg-secondary/30"
+                      )}
+                    >
+                      <span>{sleeve}</span>
+                      {isSelected && <Check className="h-3.5 w-3.5 text-accent stroke-[3]" />}
+                    </button>
+                  );
+                })}
+              </div>
             )}
-          </label>
-          <div className="flex flex-wrap gap-2.5">
-            {fabricOptions.map((fabric) => {
-              const isSelected = selectedFabric === fabric.name;
-              return (
-                <button
-                  key={fabric.id}
-                  type="button"
-                  onClick={() => onFabricSelect(fabric.name)}
-                  className={cn(
-                    "min-w-[48px] h-10 px-4 rounded-xl border text-xs font-extrabold transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 select-none",
-                    isSelected
-                      ? "border-accent bg-accent/10 text-accent ring-1 ring-accent/40 shadow-2xs scale-105"
-                      : "border-border/50 bg-card text-foreground hover:border-accent/40 hover:bg-secondary/30",
-                  )}
-                >
-                  <span>{fabric.name}</span>
-                  {isSelected && <Check className="h-3.5 w-3.5 text-accent stroke-[3]" />}
-                </button>
-              );
-            })}
           </div>
         </div>
       )}
@@ -382,6 +443,11 @@ export function VariantSelector({
             </p>
           </div>
         </div>
+      )}
+
+      {/* Fabric Pricing Guide Modal */}
+      {showPricingGuide && (
+        <FabricPricingGuide onClose={() => setShowPricingGuide(false)} />
       )}
     </div>
   );

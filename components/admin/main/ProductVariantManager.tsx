@@ -23,8 +23,10 @@ import {
   useProductVariants,
   useUpdateVariant,
 } from "@/hooks/useVariants";
-import { Edit, Plus, Trash2 } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { Edit, Loader2, Plus, Tag, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface ProductVariantManagerProps {
   productId: string;
@@ -45,6 +47,8 @@ export function ProductVariantManager({
     null,
   );
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const supabase = createClient();
 
   const [formData, setFormData] = useState({
     size: "",
@@ -141,30 +145,103 @@ export function ProductVariantManager({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Variants</h3>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setEditingVariant(null);
-                resetForm();
-              }}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Variant
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingVariant ? "Edit Variant" : "Add New Variant"} -{" "}
-                {productName}
-              </DialogTitle>
-            </DialogHeader>
+    <>
+      <DialogHeader className="p-6 pb-4 shrink-0 flex flex-row items-center justify-between border-b">
+        <DialogTitle className="text-xl">
+          Manage Variants - {productName}
+        </DialogTitle>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={async () => {
+              if (
+                !confirm(
+                  "This will automatically generate variants for all active global fabrics (Short Sleeve and Long Sleeve). Continue?"
+                )
+              )
+                return;
+              
+              setIsGenerating(true);
+              try {
+                const { data: fabrics, error } = await supabase
+                  .from("global_fabric_pricing")
+                  .select("*")
+                  .eq("is_active", true);
+                
+                if (error) throw error;
+
+                if (fabrics && fabrics.length > 0) {
+                  for (const fabric of fabrics) {
+                    // Short Sleeve
+                    await createVariant.mutateAsync({
+                      product_id: productId,
+                      size: null,
+                      color: null,
+                      fabric: `${fabric.fabric_name} (Short Sleeve)`,
+                      sku: `VAR-${Date.now()}-${fabric.id.substring(0,4)}-SS`,
+                      variant_price: Number(fabric.short_sleeve_price),
+                      variant_sale_price: null,
+                      price_adjustment: 0,
+                      stock: 999,
+                      is_active: true,
+                    } as any);
+                    await new Promise((r) => setTimeout(r, 50));
+
+                    // Long Sleeve
+                    await createVariant.mutateAsync({
+                      product_id: productId,
+                      size: null,
+                      color: null,
+                      fabric: `${fabric.fabric_name} (Long Sleeve)`,
+                      sku: `VAR-${Date.now()}-${fabric.id.substring(0,4)}-LS`,
+                      variant_price: Number(fabric.long_sleeve_price),
+                      variant_sale_price: null,
+                      price_adjustment: 0,
+                      stock: 999,
+                      is_active: true,
+                    } as any);
+                    await new Promise((r) => setTimeout(r, 50));
+                  }
+                  toast.success("Global fabric variants generated successfully");
+                }
+              } catch (e) {
+                toast.error("Failed to generate variants");
+              } finally {
+                setIsGenerating(false);
+              }
+            }}
+            disabled={isGenerating}
+          >
+            {isGenerating ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Tag className="h-4 w-4 mr-2" />
+            )}
+            Auto-Generate Fabrics
+          </Button>
+
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setEditingVariant(null);
+                  resetForm();
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Variant
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingVariant ? "Edit Variant" : "Add New Variant"} -{" "}
+                  {productName}
+                </DialogTitle>
+              </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -389,8 +466,11 @@ export function ProductVariantManager({
             </form>
           </DialogContent>
         </Dialog>
-      </div>
+        </div>
+      </DialogHeader>
 
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 min-w-0">
+        <div className="space-y-4">
       {variants.length === 0 ? (
         <p className="text-sm text-muted-foreground py-4 text-center">
           No variants yet. Add one to allow customers to choose options.
@@ -495,6 +575,8 @@ export function ProductVariantManager({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+        </div>
+      </div>
+    </>
   );
 }

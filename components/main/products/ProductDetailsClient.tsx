@@ -85,7 +85,10 @@ export default function ProductDetailsClient() {
       ...new Set(
         variants
           .filter((v) => v.fabric && v.is_active)
-          .map((v) => v.fabric!.trim())
+          .map((v) => {
+            const match = v.fabric!.match(/^(.*?)\s*\((Short Sleeve|Long Sleeve)\)$/);
+            return match ? match[1].trim() : v.fabric!.trim();
+          })
           .filter(Boolean)
       )
     ];
@@ -100,7 +103,9 @@ export default function ProductDetailsClient() {
   useEffect(() => {
     if (fabricOptions.length > 0) {
       const fabricNames = fabricOptions.map((f) => f.name);
-      if (!selectedFabric || !fabricNames.includes(selectedFabric)) {
+      const baseSelectedFabric = selectedFabric ? (selectedFabric.match(/^(.*?)\s*\((Short Sleeve|Long Sleeve)\)$/)?.[1]?.trim() || selectedFabric.trim()) : "";
+      
+      if (!selectedFabric || !fabricNames.includes(baseSelectedFabric)) {
         setSelectedFabric(fabricOptions[0].name);
       }
     } else {
