@@ -31,6 +31,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  useAdminCreateReview,
+  useHideStockMap,
+  useProductRatingsMap,
+  useSetHideStock,
+  useSetProductRating,
+} from "@/hooks/useProductReviews";
+import {
   Product,
   useCategories,
   useCreateProduct,
@@ -38,14 +45,8 @@ import {
   useProducts,
   useUpdateProduct,
 } from "@/hooks/useShopData";
-import {
-  useAdminCreateReview,
-  useHideStockMap,
-  useProductRatingsMap,
-  useSetHideStock,
-  useSetProductRating,
-} from "@/hooks/useProductReviews";
-import { Edit, MoreHorizontal, Plus, Search, Star, Trash2 } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { Edit, Layers, MoreHorizontal, Plus, Search, Star, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -74,7 +75,8 @@ export default function AdminProducts() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [variantManagerProduct, setVariantManagerProduct] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkDelete, setShowBulkDelete] = useState(false);
@@ -99,7 +101,23 @@ export default function AdminProducts() {
     hide_stock: false,
     rating: 5,
     specifications: [] as { label: string; value: string }[],
+    fabrics: [] as string[],
   });
+
+  const [globalFabrics, setGlobalFabrics] = useState<any[]>([]);
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchFabrics() {
+      const { data } = await supabase
+        .from("global_fabric_pricing")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+      if (data) setGlobalFabrics(data);
+    }
+    fetchFabrics();
+  }, []);
 
   const filteredProducts = products.filter(
     (p) =>
@@ -132,6 +150,7 @@ export default function AdminProducts() {
       hide_stock: existingHideStock,
       rating: existingRating,
       specifications: (product as any).specifications || [],
+      fabrics: product.fabrics ? product.fabrics.split(",").map((s) => s.trim()).filter(Boolean) : [],
     });
     setIsDialogOpen(true);
   };
@@ -197,6 +216,7 @@ export default function AdminProducts() {
         formData.specifications.filter((s) => s.label.trim()).length > 0
           ? formData.specifications.filter((s) => s.label.trim())
           : null,
+      fabrics: formData.fabrics.length > 0 ? formData.fabrics.join(",") : null,
     };
 
     try {
@@ -212,7 +232,6 @@ export default function AdminProducts() {
         if (newProd?.id) targetProductId = newProd.id;
       }
 
-      // Save card rating & hide stock to store_settings
       if (targetProductId) {
         await setProductRating.mutateAsync({
           productId: targetProductId,
@@ -223,13 +242,56 @@ export default function AdminProducts() {
           productId: targetProductId,
           hideStock: formData.hide_stock,
         });
+
+        if (formData.fabrics.length > 0) {
+          const { data: existingVariants } = await supabase
+            .from("product_variants")
+            .select("*")
+            .eq("product_id", targetProductId);
+
+          for (const fabricName of formData.fabrics) {
+            const fabricData = globalFabrics.find(
+              (f) => f.fabric_name === fabricName
+            );
+            if (!fabricData) continue;
+
+            const sleeveSizes = ["Short Sleeve", "Long Sleeve"];
+            const physicalSizes = ["M", "L", "XL", "XXL"];
+            
+            for (const sleeveSize of sleeveSizes) {
+              const variantName = `${fabricName} (${sleeveSize})`;
+              const price = sleeveSize === "Short Sleeve" ? fabricData.short_sleeve_price : fabricData.long_sleeve_price;
+              
+              for (const pSize of physicalSizes) {
+                const exists = existingVariants?.find((v) => v.fabric === variantName && v.size === pSize);
+
+                if (exists) {
+                  await supabase
+                    .from("product_variants")
+                    .update({ variant_price: price })
+                    .eq("id", exists.id);
+                } else {
+                  await supabase.from("product_variants").insert({
+                    product_id: targetProductId,
+                    fabric: variantName,
+                    size: pSize,
+                    sku: `VAR-${Date.now()}-${Math.floor(Math.random() * 1000)}-${sleeveSize === "Short Sleeve" ? "SS" : "LS"}-${pSize}`,
+                    variant_price: price,
+                    stock: 999,
+                    is_active: true,
+                  });
+                  await new Promise((r) => setTimeout(r, 50));
+                }
+              }
+            }
+          }
+        }
       }
 
       setIsDialogOpen(false);
       setEditingProduct(null);
       resetForm();
     } catch (error) {
-      // Error handled by mutation
     }
   };
 
@@ -254,10 +316,10 @@ export default function AdminProducts() {
       hide_stock: false,
       rating: 5,
       specifications: [],
+      fabrics: [],
     });
   };
 
-  // Auto-generate slug from name
   useEffect(() => {
     if (!editingProduct && formData.name) {
       setFormData((prev) => ({ ...prev, slug: generateSlug(prev.name) }));
@@ -408,6 +470,41 @@ export default function AdminProducts() {
                       className="input-shop"
                     />
                   </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium mb-2">
+                      Available Fabrics (Custom Jerseys)
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {globalFabrics.map((fabric) => {
+                        const isSelected = formData.fabrics.includes(
+                          fabric.fabric_name
+                        );
+                        return (
+                          <button
+                            type="button"
+                            key={fabric.id}
+                            onClick={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                fabrics: isSelected
+                                  ? prev.fabrics.filter(
+                                      (f) => f !== fabric.fabric_name
+                                    )
+                                  : [...prev.fabrics, fabric.fabric_name],
+                              }));
+                            }}
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                              isSelected
+                                ? "border-accent bg-accent text-accent-foreground"
+                                : "border-border hover:border-accent/50 text-muted-foreground"
+                            }`}
+                          >
+                            {fabric.fabric_name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
@@ -437,7 +534,6 @@ export default function AdminProducts() {
                     className="input-shop min-h-[100px]"
                   />
                 </div>
-                {/* Specifications */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     Specifications (optional)
@@ -506,7 +602,6 @@ export default function AdminProducts() {
                   </Button>
                 </div>
 
-                {/* Product Card Rating Selection */}
                 <div className="border-t border-border/60 pt-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="text-sm font-semibold flex items-center gap-1.5">
@@ -646,22 +741,13 @@ export default function AdminProducts() {
                   </Button>
                 </div>
               </form>
-
-              {/* Product Variants Manager - only for variable products */}
-              {editingProduct && formData.is_variable && (
-                <div className="mt-8 pt-8 border-t border-border">
-                  <ProductVariantManager
-                    productId={editingProduct.id}
-                    productName={editingProduct.name}
-                  />
-                </div>
-              )}
             </DialogContent>
           </Dialog>
         </div>
       </div>
 
-      {/* Search & Bulk Actions */}
+
+
       <div className="flex items-center gap-4 mb-6 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -802,6 +888,12 @@ export default function AdminProducts() {
                             <Edit className="h-4 w-4 mr-2" />
                             Edit
                           </DropdownMenuItem>
+                          {product.is_variable && (
+                            <DropdownMenuItem onClick={() => setVariantManagerProduct(product)}>
+                              <Layers className="h-4 w-4 mr-2" />
+                              Manage Variants
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem
                             onClick={() => setDeleteId(product.id)}
                             className="text-destructive"
@@ -865,6 +957,18 @@ export default function AdminProducts() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Variant Manager Modal */}
+      <Dialog open={!!variantManagerProduct} onOpenChange={(open) => !open && setVariantManagerProduct(null)}>
+        <DialogContent className="max-w-5xl w-full max-h-[90vh] flex flex-col gap-0 p-0 overflow-hidden sm:max-w-5xl">
+          {variantManagerProduct && (
+            <ProductVariantManager 
+              productId={variantManagerProduct.id} 
+              productName={variantManagerProduct.name} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

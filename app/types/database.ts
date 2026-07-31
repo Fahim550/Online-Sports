@@ -14,6 +14,39 @@ export type Database = {
   };
   public: {
     Tables: {
+      global_fabric_pricing: {
+        Row: {
+          created_at: string;
+          fabric_name: string;
+          id: string;
+          is_active: boolean;
+          long_sleeve_price: number;
+          short_sleeve_price: number;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          fabric_name: string;
+          id?: string;
+          is_active?: boolean;
+          long_sleeve_price?: number;
+          short_sleeve_price?: number;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          fabric_name?: string;
+          id?: string;
+          is_active?: boolean;
+          long_sleeve_price?: number;
+          short_sleeve_price?: number;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       capi_secrets: {
         Row: {
           access_token: string | null;

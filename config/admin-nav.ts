@@ -41,6 +41,13 @@ export const ADMIN_NAVIGATION: AdminNavItem[] = [
     section: "Main",
   },
   {
+    name: "Fabric Pricing",
+    href: "/admin/fabric-pricing",
+    icon: Tag,
+    roles: ["admin", "manager"],
+    section: "Main",
+  },
+  {
     name: "Orders",
     href: "/admin/orders",
     icon: ShoppingCart,
